@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wisata Desa — Desa Sukamaju</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=General+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          primary: {
+            50:  '#f0fdf4',
+            100: '#dcfce7',
+            200: '#bbf7d0',
+            300: '#86efac',
+            400: '#4ade80',
+            500: '#22c55e',
+            600: '#16a34a',
+            700: '#15803d',
+            800: '#166534',
+            900: '#14532d',
+            950: '#052e16',
+          },
+          earth: {
+            50: '#faf8f5',
+            100: '#f3efe8',
+            200: '#e8e0d4',
+            300: '#d4c7b4',
+            400: '#b8a489',
+            500: '#9a8367',
+            600: '#7d6850',
+            700: '#655341',
+            800: '#544639',
+            900: '#493d33',
+          },
+          sky: {
+            400: '#38bdf8',
+            500: '#0ea5e9',
+            600: '#0284c7',
+          },
+          accent: '#e8a838',
+          dark: '#1a2e1a',
+        },
+        fontFamily: {
+          display: ['"DM Serif Display"', 'Georgia', 'serif'],
+          body: ['"General Sans"', 'sans-serif'],
+        },
+      }
+    }
+  }
+</script>
+<style>
+  @font-face { font-family: 'General Sans'; src: local('General Sans'); }
+  * { font-family: 'General Sans', system-ui, sans-serif; }
+  .font-display { font-family: 'DM Serif Display', serif; }
+  html { scroll-behavior: smooth; }
+
+  .navbar-scrolled { background: rgba(22,101,61,0.97); backdrop-filter: blur(12px); box-shadow: 0 2px 24px rgba(0,0,0,0.15); }
+
+  .hero-bg {
+    background: linear-gradient(160deg, #14532d 0%, #166534 30%, #15803d 60%, #1a4a2e 100%);
+  }
+
+  .gold-line::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    background: #e8a838;
+    margin-top: 12px;
+  }
+  .gold-line-center::after {
+    content: '';
+    display: block;
+    width: 56px;
+    height: 3px;
+    background: #e8a838;
+    margin: 12px auto 0;
+  }
+
+  .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+  .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 40px rgba(21,128,61,0.12); }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #16a34a;
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 0;
+    width: 0; height: 2px;
+    background: #e8a838;
+    transition: width 0.25s ease;
+  }
+  .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+  .dropdown-menu {
+    display: none; position: absolute; top: 100%; left: 0; min-width: 220px;
+    background: white; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    border: 1px solid #e8e0d4; z-index: 100; padding: 8px 0;
+  }
+  .dropdown:hover .dropdown-menu { display: block; }
+  .dropdown-menu a { display: block; padding: 10px 20px; color: #1a2e1a; font-size: 14px; transition: all 0.15s; }
+  .dropdown-menu a:hover { background: #f0fdf4; color: #16a34a; }
+
+  .animate-in { animation: fadeUp 0.6s ease forwards; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+  @keyframes bounce { 0%,100%{transform:translateY(0)}50%{transform:translateY(8px)} }
+  .scroll-bounce { animation: bounce 1.5s infinite; }
+
+  .leaf-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .stat-counter { transition: all 0.3s; }
+  .stat-counter:hover { transform: scale(1.05); }
+
+  .testi-card { border-left: 4px solid #e8a838; }
+
+  .service-icon { transition: all 0.3s; }
+  .service-icon:hover { background: #16a34a; color: white; }
+
+  #mobile-menu { transition: all 0.3s ease; }
+
+  .article-img { overflow: hidden; }
+  .article-img img { transition: transform 0.4s ease; }
+  .article-img:hover img { transform: scale(1.05); }
+
+  .apbdes-bar { transition: width 1.5s ease; }
+</style>
+</head>
+<body class="bg-white text-dark antialiased">
+
+<!-- ============ NAVBAR ============ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-primary-800 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      <a href="index.html" class="flex items-center gap-3 flex-shrink-0">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+          <svg viewBox="0 0 40 40" class="w-8 h-8" fill="none">
+            <circle cx="20" cy="20" r="18" stroke="#166534" stroke-width="2"/>
+            <path d="M20 8c-2 4-6 8-6 14 0 4 2.7 7.2 6 7.2s6-3.2 6-7.2c0-6-4-10-6-14z" fill="#16a34a" opacity="0.8"/>
+            <path d="M20 12c-1.5 3-4.5 6-4.5 10.5 0 3 2 5.4 4.5 5.4s4.5-2.4 4.5-5.4c0-4.5-3-7.5-4.5-10.5z" fill="#22c55e"/>
+          </svg>
+        </div>
+        <div class="hidden sm:block">
+          <p class="text-white font-bold text-sm leading-tight font-display">Desa Sukamaju</p>
+          <p class="text-white/60 text-xs leading-tight">Kab. Berau, Kalimantan Timur</p>
+        </div>
+      </a>
+      <div class="hidden lg:flex items-center gap-6">
+        <a href="index.html" class="nav-link active text-white text-sm font-medium">Beranda</a>
+        <div class="dropdown relative">
+          <button class="text-white/90 hover:text-white text-sm font-medium flex items-center gap-1">Profil Desa<svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>
+          <div class="dropdown-menu">
+            <a href="profil-desa.html">Tentang Desa</a>
+            <a href="visi-misi.html">Visi & Misi</a>
+            <a href="sejarah.html">Sejarah Desa</a>
+            <a href="struktur.html">Struktur Pemerintahan</a>
+            <a href="demografi.html">Data Demografi</a>
+          </div>
+        </div>
+        <div class="dropdown relative">
+          <button class="text-white/90 hover:text-white text-sm font-medium flex items-center gap-1">Layanan<svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>
+          <div class="dropdown-menu">
+            <a href="layanan-surat.html">Layanan Surat</a>
+            <a href="pengaduan.html">Pengaduan Warga</a>
+            <a href="dokumen.html">Dokumen Publik</a>
+          </div>
+        </div>
+        <a href="transparansi.html" class="nav-link text-white/90 hover:text-white text-sm font-medium">Transparansi</a>
+        <div class="dropdown relative">
+          <button class="text-white/90 hover:text-white text-sm font-medium flex items-center gap-1">Potensi<svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>
+          <div class="dropdown-menu">
+            <a href="wisata.html">Wisata Desa</a>
+            <a href="umkm.html">Produk UMKM</a>
+            <a href="pertanian.html">Pertanian</a>
+          </div>
+        </div>
+        <div class="dropdown relative">
+          <button class="text-white/90 hover:text-white text-sm font-medium flex items-center gap-1">Informasi<svg class="w-3.5 h-3.5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg></button>
+          <div class="dropdown-menu">
+            <a href="berita.html">Berita Desa</a>
+            <a href="kegiatan.html">Agenda Kegiatan</a>
+            <a href="galeri.html">Galeri Foto</a>
+          </div>
+        </div>
+        <a href="kontak.html" class="nav-link text-white/90 hover:text-white text-sm font-medium">Kontak</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="layanan-surat.html" class="hidden lg:flex items-center gap-2 bg-white text-primary-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-earth-50 transition-colors shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Layanan Online
+        </a>
+        <button id="burger-btn" class="lg:hidden flex flex-col gap-1.5 p-2" aria-label="Menu">
+          <span class="w-5 h-0.5 bg-white block"></span>
+          <span class="w-5 h-0.5 bg-white block"></span>
+          <span class="w-5 h-0.5 bg-white block"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="lg:hidden hidden bg-primary-900 border-t border-white/10">
+    <div class="max-w-7xl mx-auto px-4 py-4 space-y-1">
+      <a href="index.html" class="block text-white bg-white/10 px-3 py-2.5 rounded-lg text-sm font-medium">Beranda</a>
+      <a href="profil-desa.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Profil Desa</a>
+      <a href="visi-misi.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Visi & Misi</a>
+      <a href="struktur.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Struktur Pemerintahan</a>
+      <a href="demografi.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Data Demografi</a>
+      <a href="layanan-surat.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Layanan Surat</a>
+      <a href="pengaduan.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Pengaduan Warga</a>
+      <a href="transparansi.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Transparansi APBDes</a>
+      <a href="wisata.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Wisata Desa</a>
+      <a href="umkm.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Produk UMKM</a>
+      <a href="berita.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Berita Desa</a>
+      <a href="kegiatan.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Agenda Kegiatan</a>
+      <a href="galeri.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Galeri</a>
+      <a href="kontak.html" class="block text-white/90 hover:bg-white/10 px-3 py-2.5 rounded-lg text-sm">Kontak</a>
+      <div class="pt-2 border-t border-white/10">
+        <a href="layanan-surat.html" class="block bg-white text-primary-800 text-center px-4 py-2.5 rounded-lg text-sm font-semibold">Layanan Online</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============ HERO ============ -->
+<section class="pt-24 pb-16 hero-bg leaf-pattern">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+    <span class="section-label">Potensi Desa</span>
+    <h1 class="font-display text-4xl md:text-5xl font-bold text-dark mt-2">Wisata Desa Sukamaju</h1>
+    <p class="mt-4 text-lg text-muted max-w-2xl mx-auto">Nikmati keindahan alam dan kearifan budaya lokal. Desa Sukamaju menawarkan pengalaman ekowisata yang autentik di jantung Kalimantan Timur.</p>
+  </div>
+</section>
+
+<!-- Breadcrumb -->
+<div class="bg-earth-50 border-b border-earth-200">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+    <nav class="flex items-center gap-2 text-sm text-muted">
+      <a href="index.html" class="hover:text-primary-700">Beranda</a>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <a href="#" class="hover:text-primary-700">Potensi</a>
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-dark font-medium">Wisata Desa</span>
+    </nav>
+  </div>
+</div>
+
+<!-- ============ MAIN ============ -->
+<section class="py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+      <div class="bg-primary-50 border border-primary-200 rounded-xl p-5 text-center">
+        <p class="font-display text-2xl font-bold text-primary-800">6</p>
+        <p class="text-xs text-primary-700 font-medium mt-1">Destinasi Wisata</p>
+      </div>
+      <div class="bg-primary-50 border border-primary-200 rounded-xl p-5 text-center">
+        <p class="font-display text-2xl font-bold text-primary-800">12.500+</p>
+        <p class="text-xs text-primary-700 font-medium mt-1">Pengunjung/Tahun</p>
+      </div>
+      <div class="bg-primary-50 border border-primary-200 rounded-xl p-5 text-center">
+        <p class="font-display text-2xl font-bold text-primary-800">3</p>
+        <p class="text-xs text-primary-700 font-medium mt-1">Homestay Tersedia</p>
+      </div>
+      <div class="bg-primary-50 border border-primary-200 rounded-xl p-5 text-center">
+        <p class="font-display text-2xl font-bold text-primary-800">15</p>
+        <p class="text-xs text-primary-700 font-medium mt-1">Pemandu Lokal</p>
+      </div>
+    </div>
+
+    <!-- Destination Cards -->
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+
+      <!-- Card 1 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-primary-200 to-teal-200 flex items-center justify-center">
+          <span class="text-6xl">🌊</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded-full">Alam</span>
+            <span class="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-1 rounded-full">⭐ Favorit</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Air Terjun Telaga Biru</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Air terjun setinggi 25 meter dengan kolam alami berwarna biru jernih. Trekking ringan 30 menit melalui hutan tropis yang asri.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Dusun Lestari</span>
+            <span>🕐 Buka 07.00–17.00</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Tiket: Rp 10.000/orang</p>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-green-200 to-lime-200 flex items-center justify-center">
+          <span class="text-6xl">🌳</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-primary-100 text-primary-700 text-xs font-semibold px-2 py-1 rounded-full">Ekowisata</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Hutan Mangrove Sukamaju</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Jelajahi ekosistem mangrove seluas 15 hektar melalui jembatan kayu. Spot foto instagramable dan edukasi konservasi.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Pesisir Desa</span>
+            <span>🕐 Buka 06.00–18.00</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Tiket: Rp 15.000/orang</p>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-amber-200 to-orange-200 flex items-center justify-center">
+          <span class="text-6xl">🏛️</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-purple-100 text-purple-700 text-xs font-semibold px-2 py-1 rounded-full">Budaya</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Kampung Adat Teluk Bayur</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Desa wisata budaya dengan rumah adat tradisional. Saksikan pertunjukan tari dan kerajinan tenun khas suku Dayak Berau.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Dusun Harapan</span>
+            <span>🕐 Setiap hari</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Tiket: Rp 20.000/orang</p>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-blue-200 to-cyan-200 flex items-center justify-center">
+          <span class="text-6xl">🛶</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded-full">Petualangan</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Susur Sungai Bayur</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Susuri sungai Bayur dengan perahu tradisional. Amati satwa liar termasuk bekantan dan burung rangkong di habitat aslinya.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Dermaga Desa</span>
+            <span>🕐 06.00 & 15.00</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Paket: Rp 75.000/orang</p>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-lime-200 to-green-200 flex items-center justify-center">
+          <span class="text-6xl">🌾</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-lime-100 text-lime-700 text-xs font-semibold px-2 py-1 rounded-full">Agrowisata</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Kebun Edukasi Organik</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Pengalaman bertani langsung: tanam padi, petik sayur, dan olah hasil kebun. Cocok untuk keluarga dan rombongan sekolah.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Dusun Makmur</span>
+            <span>🕐 08.00–16.00</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Paket: Rp 50.000/orang</p>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="bg-white border border-earth-200 rounded-2xl overflow-hidden card-hover">
+        <div class="h-52 bg-gradient-to-br from-indigo-200 to-purple-200 flex items-center justify-center">
+          <span class="text-6xl">⛺</span>
+        </div>
+        <div class="p-6">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full">Camping</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-dark">Bukit Panorama</h3>
+          <p class="text-sm text-muted mt-2 mb-4">Area camping di puncak bukit dengan pemandangan 360° laut dan hutan. Spot terbaik untuk sunrise dan fotografi.</p>
+          <div class="flex items-center justify-between text-xs text-muted">
+            <span>📍 Perbukitan Selatan</span>
+            <span>🕐 24 Jam</span>
+          </div>
+          <p class="text-sm font-semibold text-primary-700 mt-3">Camping: Rp 35.000/tenda</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking & Info -->
+    <div class="grid md:grid-cols-2 gap-8">
+      <div class="bg-white border border-earth-200 rounded-2xl p-8">
+        <h3 class="font-display text-xl font-bold text-dark mb-4">🏠 Akomodasi</h3>
+        <div class="space-y-4">
+          <div class="flex items-start gap-4 p-4 bg-earth-50 rounded-xl">
+            <span class="text-2xl">🏡</span>
+            <div>
+              <p class="font-semibold text-dark">Homestay Ibu Siti</p>
+              <p class="text-sm text-muted">2 kamar · AC · Sarapan · Rp 250.000/malam</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 bg-earth-50 rounded-xl">
+            <span class="text-2xl">🏡</span>
+            <div>
+              <p class="font-semibold text-dark">Rumah Tamu Pak Hasan</p>
+              <p class="text-sm text-muted">3 kamar · Kipas · Sarapan · Rp 200.000/malam</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-4 p-4 bg-earth-50 rounded-xl">
+            <span class="text-2xl">🏡</span>
+            <div>
+              <p class="font-semibold text-dark">Glamping Bukit Panorama</p>
+              <p class="text-sm text-muted">5 tenda premium · Makan 3x · Rp 450.000/malam</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white border border-earth-200 rounded-2xl p-8">
+        <h3 class="font-display text-xl font-bold text-dark mb-4">ℹ️ Informasi Wisata</h3>
+        <div class="space-y-4 text-sm">
+          <div class="flex items-start gap-3">
+            <span class="text-lg">🗓️</span>
+            <div><p class="font-semibold text-dark">Waktu Terbaik</p><p class="text-muted">April – Oktober (musim kemarau)</p></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-lg">🚗</span>
+            <div><p class="font-semibold text-dark">Akses</p><p class="text-muted">45 menit dari Kota Tanjung Redeb, jalan beraspal</p></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-lg">📱</span>
+            <div><p class="font-semibold text-dark">Reservasi</p><p class="text-muted">WhatsApp Pokdarwis: 0812-3456-7890</p></div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="text-lg">⚠️</span>
+            <div><p class="font-semibold text-dark">Penting</p><p class="text-muted">Bawa obat pribadi, gunakan sepatu trekking, jaga kebersihan lingkungan</p></div>
+          </div>
+        </div>
+        <a href="kontak.html" class="mt-6 inline-flex items-center gap-2 bg-primary-700 hover:bg-primary-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors w-full justify-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+          Hubungi Pokdarwis
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="bg-gray-900 text-white">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid md:grid-cols-4 gap-10">
+      <div class="md:col-span-1">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center">
+            <svg viewBox="0 0 40 40" class="w-7 h-7" fill="none"><path d="M20 8c-2 4-6 8-6 14 0 4 2.7 7.2 6 7.2s6-3.2 6-7.2c0-6-4-10-6-14z" fill="#22c55e"/></svg>
+          </div>
+          <div>
+            <p class="font-display font-bold text-sm">Desa Sukamaju</p>
+            <p class="text-gray-400 text-xs">Kab. Berau, Kaltim</p>
+          </div>
+        </div>
+        <p class="text-gray-400 text-sm leading-relaxed">Portal resmi Pemerintah Desa Sukamaju. Membangun desa transparan, inovatif, dan berdaya saing.</p>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm mb-4 text-accent">Profil</h4>
+        <div class="space-y-2.5">
+          <a href="profil-desa.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Tentang Desa</a>
+          <a href="visi-misi.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Visi & Misi</a>
+          <a href="struktur.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Struktur Pemerintahan</a>
+          <a href="sejarah.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Sejarah Desa</a>
+          <a href="demografi.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Data Demografi</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm mb-4 text-accent">Layanan</h4>
+        <div class="space-y-2.5">
+          <a href="layanan-surat.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Pengajuan Surat</a>
+          <a href="pengaduan.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Pengaduan Warga</a>
+          <a href="transparansi.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Transparansi APBDes</a>
+          <a href="dokumen.html" class="block text-gray-400 text-sm hover:text-white transition-colors">Dokumen Publik</a>
+        </div>
+      </div>
+      <div>
+        <h4 class="font-semibold text-sm mb-4 text-accent">Kontak</h4>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <svg class="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <p class="text-gray-400 text-sm">Jl. Raya Sukamaju No. 1, Kec. Teluk Bayur, Kab. Berau, Kalimantan Timur</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+            <p class="text-gray-400 text-sm">+62 812-3456-7890</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <p class="text-gray-400 text-sm">desa.sukamaju@beraukab.go.id</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <p class="text-gray-500 text-xs">&copy; 2025 Pemerintah Desa Sukamaju. Hak cipta dilindungi undang-undang.</p>
+      <div class="flex items-center gap-4">
+        <a href="#" class="text-gray-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a>
+        <a href="#" class="text-gray-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12.017 24c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641 0 12.017 0z"/></svg></a>
+        <a href="#" class="text-gray-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a>
+        <a href="#" class="text-gray-500 hover:text-white transition-colors"><svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggle
+  document.getElementById('burger-btn').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+  });
+
+  // Navbar scroll effect
+  window.addEventListener('scroll', function() {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 50) {
+      navbar.classList.add('navbar-scrolled');
+    } else {
+      navbar.classList.remove('navbar-scrolled');
+    }
+  });
+</script>
+</body>
+</html>
