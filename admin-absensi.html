@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Absensi Perangkat — Backoffice Kalurahan Bokoharjo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=General+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: { colors: {
+      primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+      earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+      accent:'#e8a838', dark:'#1a2e1a'
+    }}}
+  }
+</script>
+<style>
+  * { font-family: 'General Sans', system-ui, sans-serif; }
+  .font-display { font-family: 'DM Serif Display', serif; }
+
+  #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+  @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+  #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+  #sidebarBackdrop.show { display:block; }
+  .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+  .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+  .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+  .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+  .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+  .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+  .nav-badge.red { background:#ef4444; color:#fff; }
+
+  /* Tab */
+  .tab-btn { transition: all 0.2s; }
+  .tab-btn.active { border-bottom: 2px solid #16a34a; color: #16a34a; }
+
+  /* Table */
+  .tbl-row:hover { background: #f0fdf4; }
+
+  /* Badge */
+  .badge-hadir    { background:#dcfce7; color:#166534; }
+  .badge-terlambat{ background:#fff7ed; color:#9a3412; }
+  .badge-izin     { background:#fefce8; color:#854d0e; }
+  .badge-alpha    { background:#fee2e2; color:#991b1b; }
+
+  /* Progress bar */
+  .progress-bar { height:8px; border-radius:4px; overflow:hidden; background:#e5e7eb; }
+  .progress-fill { height:100%; border-radius:4px; transition: width 0.4s; }
+
+  /* Modal */
+  .modal-overlay { background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn 0.2s ease-out forwards; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background:#f1f1f1; }
+  ::-webkit-scrollbar-thumb { background:#bbf7d0; border-radius:3px; }
+</style>
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden">
+
+<!-- SIDEBAR BACKDROP -->
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0">
+      <div class="min-w-0">
+        <p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p>
+        <p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Layanan Surat
+      <span class="nav-badge">5</span>
+    </a>
+    <a href="admin-pengaduan.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+      Pengaduan Warga
+      <span class="nav-badge red">3</span>
+    </a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+      Berita &amp; Kegiatan
+    </a>
+    <a href="admin-galeri.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Galeri Foto
+    </a>
+    <a href="admin-dokumen.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Dokumen &amp; APBDes
+    </a>
+    <a href="admin-profil.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      Profil Kalurahan
+    </a>
+        <a href="admin-umkm.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>
+      UMKM
+    </a>
+    <a href="admin-wisata.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Wisata Desa
+    </a>
+    <a href="admin-pertanian.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Pertanian
+    </a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-absensi.html" class="nav-item active">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Absensi Perangkat
+    </a>
+    <div class="mt-2 pt-2 border-t border-white/10">
+      <a href="index.html" target="_blank" class="nav-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Portal Kalurahan
+      </a>
+    </div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p>
+        <p class="text-green-400/50 text-xs">Operator Kalurahan</p>
+      </div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Keluar
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+
+  <!-- TOPBAR -->
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-base font-bold text-gray-800 leading-tight">Absensi Perangkat Kalurahan</h1>
+      <p class="text-xs text-gray-500" id="topbarDate"></p>
+    </div>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <a href="absensi-perangkat.html" class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span class="hidden sm:inline">Buka Halaman Absensi</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- PAGE BODY -->
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6">
+
+    <!-- TABS CARD -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="border-b border-gray-200 px-6 flex gap-6">
+        <button id="tabHarianBtn" onclick="switchTab('harian')" class="tab-btn active py-4 text-sm font-medium text-gray-700">
+          Rekap Harian
+        </button>
+        <button id="tabBulananBtn" onclick="switchTab('bulanan')" class="tab-btn py-4 text-sm font-medium text-gray-500">
+          Rekap Bulanan
+        </button>
+      </div>
+
+      <!-- TAB: Rekap Harian -->
+      <div id="tabHarian" class="p-6">
+
+        <!-- Date Navigator -->
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <button onclick="changeDay(-1)" class="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="flex items-center gap-2">
+              <input type="date" id="datePicker" class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" onchange="updateDateDisplay()">
+              <span id="dateLabel" class="text-sm font-medium text-gray-700"></span>
+            </div>
+            <button onclick="changeDay(1)" class="w-9 h-9 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <button onclick="alert('Fitur export akan segera tersedia')" class="inline-flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-4 py-2 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Export PDF
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-green-50 border border-green-100 rounded-xl p-4">
+            <p class="text-xs font-medium text-green-600 uppercase tracking-wide mb-1">Hadir</p>
+            <p class="text-3xl font-bold text-green-700">12</p>
+            <p class="text-xs text-green-500 mt-1">dari 15 perangkat</p>
+          </div>
+          <div class="bg-orange-50 border border-orange-100 rounded-xl p-4">
+            <p class="text-xs font-medium text-orange-600 uppercase tracking-wide mb-1">Terlambat</p>
+            <p class="text-3xl font-bold text-orange-600">2</p>
+            <p class="text-xs text-orange-400 mt-1">dari 15 perangkat</p>
+          </div>
+          <div class="bg-yellow-50 border border-yellow-100 rounded-xl p-4">
+            <p class="text-xs font-medium text-yellow-600 uppercase tracking-wide mb-1">Izin</p>
+            <p class="text-3xl font-bold text-yellow-600">1</p>
+            <p class="text-xs text-yellow-400 mt-1">dari 15 perangkat</p>
+          </div>
+          <div class="bg-red-50 border border-red-100 rounded-xl p-4">
+            <p class="text-xs font-medium text-red-600 uppercase tracking-wide mb-1">Alpha</p>
+            <p class="text-3xl font-bold text-red-600">1</p>
+            <p class="text-xs text-red-400 mt-1">dari 15 perangkat</p>
+          </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="overflow-x-auto rounded-xl border border-gray-100">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">No</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Jabatan</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Jam Masuk</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Jam Keluar</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="harianTableBody" class="divide-y divide-gray-50">
+            </tbody>
+          </table>
+        </div>
+
+      </div><!-- end tabHarian -->
+
+      <!-- TAB: Rekap Bulanan -->
+      <div id="tabBulanan" class="p-6 hidden">
+
+        <!-- Month Picker -->
+        <div class="flex items-center gap-3 mb-6">
+          <div class="flex items-center gap-2">
+            <select id="selectBulan" class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="1">Januari</option>
+              <option value="2">Februari</option>
+              <option value="3">Maret</option>
+              <option value="4">April</option>
+              <option value="5" selected>Mei</option>
+              <option value="6">Juni</option>
+              <option value="7">Juli</option>
+              <option value="8">Agustus</option>
+              <option value="9">September</option>
+              <option value="10">Oktober</option>
+              <option value="11">November</option>
+              <option value="12">Desember</option>
+            </select>
+            <select id="selectTahun" class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+              <option value="2023">2023</option>
+              <option value="2024">2024</option>
+              <option value="2025" selected>2025</option>
+              <option value="2026">2026</option>
+            </select>
+            <button onclick="renderBulananTable()" class="bg-primary-600 hover:bg-primary-700 text-white text-sm px-4 py-2 rounded-lg transition-colors">Tampilkan</button>
+          </div>
+          <button onclick="alert('Fitur export akan segera tersedia')" class="inline-flex items-center gap-2 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm px-4 py-2 rounded-lg transition-colors ml-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Export PDF
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-gray-100 mb-4">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Jabatan</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-green-600 uppercase tracking-wider">Hadir</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-orange-500 uppercase tracking-wider">Terlambat</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-yellow-600 uppercase tracking-wider">Izin</th>
+                <th class="px-4 py-3 text-center text-xs font-semibold text-red-500 uppercase tracking-wider">Alpha</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider" style="min-width:140px">% Kehadiran</th>
+                <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Detail</th>
+              </tr>
+            </thead>
+            <tbody id="bulananTableBody" class="divide-y divide-gray-50">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary Box -->
+        <div class="bg-primary-50 border border-primary-100 rounded-xl p-4 flex flex-wrap gap-6">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <p class="text-xs text-primary-600 font-medium">Total Hari Kerja</p>
+              <p class="text-lg font-bold text-primary-800">21 hari</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            </div>
+            <div>
+              <p class="text-xs text-primary-600 font-medium">Rata-rata Kehadiran</p>
+              <p class="text-lg font-bold text-primary-800">88%</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <div>
+              <p class="text-xs text-green-600 font-medium">Total Perangkat</p>
+              <p class="text-lg font-bold text-green-800">15 orang</p>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- end tabBulanan -->
+
+    </div><!-- end card -->
+
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center modal-overlay">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 fade-in">
+    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-800">Edit Data Absensi</h3>
+      <button onclick="closeModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <p class="text-xs font-medium text-gray-500 mb-1">Nama Perangkat</p>
+        <p id="modalNama" class="text-sm font-semibold text-gray-800"></p>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-600 mb-1 block">Status Kehadiran</label>
+        <select id="modalStatus" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="hadir">Hadir</option>
+          <option value="terlambat">Terlambat</option>
+          <option value="izin">Izin</option>
+          <option value="alpha">Alpha</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-medium text-gray-600 mb-1 block">Keterangan</label>
+        <textarea id="modalKet" rows="3" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none" placeholder="Tambahkan keterangan..."></textarea>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Jam Masuk</label>
+          <input type="time" id="modalJamMasuk" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-gray-600 mb-1 block">Jam Keluar</label>
+          <input type="time" id="modalJamKeluar" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
+      <button onclick="closeModal()" class="px-4 py-2 text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+      <button onclick="saveModal()" class="px-4 py-2 text-sm bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =================== SIDEBAR ===================
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarBackdrop').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// =================== DATA ===================
+const perangkatDesa = [
+  { id:1,  nama:'H. Suratman, S.Sos',     jabatan:'Kepala Kalurahan',   jamMasuk:'07:45', jamKeluar:'15:05', status:'hadir',     ket:'' },
+  { id:2,  nama:'Drs. Bambang Supriyadi', jabatan:'Sekretaris Kalurahan',jamMasuk:'08:02', jamKeluar:'15:00', status:'hadir',     ket:'' },
+  { id:3,  nama:'Ibu Sari Dewi, SE',      jabatan:'Kaur Keuangan',      jamMasuk:'08:15', jamKeluar:'14:55', status:'hadir',     ket:'' },
+  { id:4,  nama:'Pak Joko Susilo',        jabatan:'Kaur Umum',          jamMasuk:'-',     jamKeluar:'-',     status:'izin',      ket:'Sakit (surat dokter)' },
+  { id:5,  nama:'Budi Prasetyo',          jabatan:'Kaur Perencanaan',   jamMasuk:'09:10', jamKeluar:'15:00', status:'terlambat', ket:'Terlambat 70 menit' },
+  { id:6,  nama:'Eni Rahayu',             jabatan:'Kasi Pemerintahan',  jamMasuk:'07:55', jamKeluar:'15:02', status:'hadir',     ket:'' },
+  { id:7,  nama:'Rudi Setiawan',          jabatan:'Kasi Kesejahteraan', jamMasuk:'08:00', jamKeluar:'15:00', status:'hadir',     ket:'' },
+  { id:8,  nama:'Agus Wirawan',           jabatan:'Kasi Pelayanan',     jamMasuk:'08:05', jamKeluar:'15:10', status:'hadir',     ket:'' },
+  { id:9,  nama:'Fitri Handayani',        jabatan:'Staf Pelayanan',     jamMasuk:'09:25', jamKeluar:'15:00', status:'terlambat', ket:'Terlambat 85 menit' },
+  { id:10, nama:'Hendra Kusuma',          jabatan:'Staf Keuangan',      jamMasuk:'07:50', jamKeluar:'15:00', status:'hadir',     ket:'' },
+  { id:11, nama:'Lina Marlina',           jabatan:'Staf Umum',          jamMasuk:'08:00', jamKeluar:'15:05', status:'hadir',     ket:'' },
+  { id:12, nama:'Wahyu Santoso',          jabatan:'Staf Perencanaan',   jamMasuk:'07:58', jamKeluar:'15:00', status:'hadir',     ket:'' },
+  { id:13, nama:'Dewi Kurniasih',         jabatan:'Operator Komputer',  jamMasuk:'08:10', jamKeluar:'15:00', status:'hadir',     ket:'' },
+  { id:14, nama:'Pak Sumardi',            jabatan:'Penjaga Kantor',     jamMasuk:'07:00', jamKeluar:'16:00', status:'hadir',     ket:'' },
+  { id:15, nama:'Mbak Yuni',             jabatan:'Kebersihan',         jamMasuk:'-',     jamKeluar:'-',     status:'alpha',     ket:'Tanpa keterangan' },
+];
+
+const bulananData = [
+  { hadir:20, terlambat:0,  izin:1, alpha:0 },
+  { hadir:18, terlambat:2,  izin:1, alpha:0 },
+  { hadir:19, terlambat:1,  izin:1, alpha:0 },
+  { hadir:17, terlambat:2,  izin:2, alpha:0 },
+  { hadir:18, terlambat:3,  izin:0, alpha:0 },
+  { hadir:20, terlambat:1,  izin:0, alpha:0 },
+  { hadir:19, terlambat:1,  izin:1, alpha:0 },
+  { hadir:20, terlambat:0,  izin:1, alpha:0 },
+  { hadir:16, terlambat:3,  izin:2, alpha:0 },
+  { hadir:19, terlambat:2,  izin:0, alpha:0 },
+  { hadir:18, terlambat:1,  izin:2, alpha:0 },
+  { hadir:19, terlambat:2,  izin:0, alpha:0 },
+  { hadir:20, terlambat:1,  izin:0, alpha:0 },
+  { hadir:21, terlambat:0,  izin:0, alpha:0 },
+  { hadir:14, terlambat:2,  izin:2, alpha:3 },
+];
+
+// =================== HELPERS ===================
+const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+let currentDate = new Date();
+
+function formatDate(d) {
+  return `${HARI[d.getDay()]}, ${d.getDate()} ${BULAN[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function toInputDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+
+function badgeHTML(status) {
+  const map = {
+    hadir:    { cls:'badge-hadir',     label:'Hadir' },
+    terlambat:{ cls:'badge-terlambat', label:'Terlambat' },
+    izin:     { cls:'badge-izin',      label:'Izin' },
+    alpha:    { cls:'badge-alpha',     label:'Alpha' },
+  };
+  const b = map[status] || { cls:'', label:status };
+  return `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium ${b.cls}">${b.label}</span>`;
+}
+
+// =================== HARIAN ===================
+function renderHarianTable() {
+  const tbody = document.getElementById('harianTableBody');
+  tbody.innerHTML = perangkatDesa.map((p, i) => `
+    <tr class="tbl-row transition-colors">
+      <td class="px-4 py-3 text-gray-400 text-xs">${i+1}</td>
+      <td class="px-4 py-3">
+        <p class="font-medium text-gray-800 text-sm">${p.nama}</p>
+      </td>
+      <td class="px-4 py-3 text-gray-500 text-xs">${p.jabatan}</td>
+      <td class="px-4 py-3 font-mono text-sm ${p.jamMasuk==='-'?'text-gray-300':'text-gray-700'}">${p.jamMasuk}</td>
+      <td class="px-4 py-3 font-mono text-sm ${p.jamKeluar==='-'?'text-gray-300':'text-gray-700'}">${p.jamKeluar}</td>
+      <td class="px-4 py-3">${badgeHTML(p.status)}</td>
+      <td class="px-4 py-3 text-gray-500 text-xs max-w-[160px] truncate" title="${p.ket}">${p.ket || '<span class="text-gray-300">—</span>'}</td>
+      <td class="px-4 py-3">
+        <button onclick="openModal(${p.id})" class="text-xs text-primary-600 hover:text-primary-800 font-medium border border-primary-200 hover:bg-primary-50 px-2.5 py-1 rounded-lg transition-colors">Edit</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function updateDateDisplay() {
+  const val = document.getElementById('datePicker').value;
+  if (val) {
+    const parts = val.split('-');
+    currentDate = new Date(+parts[0], +parts[1]-1, +parts[2]);
+  }
+  document.getElementById('dateLabel').textContent = formatDate(currentDate);
+}
+
+function changeDay(delta) {
+  currentDate.setDate(currentDate.getDate() + delta);
+  document.getElementById('datePicker').value = toInputDate(currentDate);
+  document.getElementById('dateLabel').textContent = formatDate(currentDate);
+}
+
+// =================== BULANAN ===================
+function renderBulananTable() {
+  const tbody = document.getElementById('bulananTableBody');
+  const totalKerja = 21;
+  tbody.innerHTML = perangkatDesa.map((p, i) => {
+    const d = bulananData[i];
+    const pct = Math.round(((d.hadir + d.terlambat) / totalKerja) * 100);
+    const barColor = pct >= 90 ? '#16a34a' : pct >= 75 ? '#ca8a04' : '#dc2626';
+    const pctBadge = pct >= 90
+      ? `<span class="text-green-700 font-semibold">${pct}%</span>`
+      : pct >= 75
+        ? `<span class="text-yellow-600 font-semibold">${pct}%</span>`
+        : `<span class="text-red-600 font-semibold">${pct}%</span>`;
+    return `
+      <tr class="tbl-row transition-colors">
+        <td class="px-4 py-3">
+          <p class="font-medium text-gray-800 text-sm">${p.nama}</p>
+        </td>
+        <td class="px-4 py-3 text-gray-500 text-xs">${p.jabatan}</td>
+        <td class="px-4 py-3 text-center text-sm font-semibold text-green-700">${d.hadir}</td>
+        <td class="px-4 py-3 text-center text-sm font-semibold text-orange-500">${d.terlambat}</td>
+        <td class="px-4 py-3 text-center text-sm font-semibold text-yellow-600">${d.izin}</td>
+        <td class="px-4 py-3 text-center text-sm font-semibold text-red-500">${d.alpha}</td>
+        <td class="px-4 py-3" style="min-width:140px">
+          <div class="flex items-center gap-2">
+            <div class="progress-bar flex-1">
+              <div class="progress-fill" style="width:${pct}%;background:${barColor}"></div>
+            </div>
+            ${pctBadge}
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          <button class="text-xs text-primary-600 hover:text-primary-800 font-medium border border-primary-200 hover:bg-primary-50 px-2.5 py-1 rounded-lg transition-colors" onclick="alert('Detail rekap ${p.nama.replace(/'/g,"\\'")}')">Lihat</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+// =================== TABS ===================
+function switchTab(tab) {
+  const harian  = document.getElementById('tabHarian');
+  const bulanan = document.getElementById('tabBulanan');
+  const btnH = document.getElementById('tabHarianBtn');
+  const btnB = document.getElementById('tabBulananBtn');
+
+  if (tab === 'harian') {
+    harian.classList.remove('hidden');
+    bulanan.classList.add('hidden');
+    btnH.classList.add('active');
+    btnB.classList.remove('active');
+    btnH.classList.replace('text-gray-500','text-gray-700');
+    btnB.classList.replace('text-gray-700','text-gray-500');
+  } else {
+    bulanan.classList.remove('hidden');
+    harian.classList.add('hidden');
+    btnB.classList.add('active');
+    btnH.classList.remove('active');
+    btnB.classList.replace('text-gray-500','text-gray-700');
+    btnH.classList.replace('text-gray-700','text-gray-500');
+  }
+}
+
+// =================== MODAL ===================
+let editingId = null;
+
+function openModal(id) {
+  const p = perangkatDesa.find(x => x.id === id);
+  if (!p) return;
+  editingId = id;
+  document.getElementById('modalNama').textContent = p.nama + ' — ' + p.jabatan;
+  document.getElementById('modalStatus').value = p.status;
+  document.getElementById('modalKet').value = p.ket;
+  document.getElementById('modalJamMasuk').value  = p.jamMasuk  !== '-' ? p.jamMasuk  : '';
+  document.getElementById('modalJamKeluar').value = p.jamKeluar !== '-' ? p.jamKeluar : '';
+  const modal = document.getElementById('editModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closeModal() {
+  const modal = document.getElementById('editModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  editingId = null;
+}
+
+function saveModal() {
+  const p = perangkatDesa.find(x => x.id === editingId);
+  if (!p) return;
+  p.status    = document.getElementById('modalStatus').value;
+  p.ket       = document.getElementById('modalKet').value;
+  const jm = document.getElementById('modalJamMasuk').value;
+  const jk = document.getElementById('modalJamKeluar').value;
+  p.jamMasuk  = jm  || '-';
+  p.jamKeluar = jk  || '-';
+  renderHarianTable();
+  closeModal();
+
+  // Toast
+  const toast = document.createElement('div');
+  toast.className = 'fixed bottom-6 right-6 bg-primary-700 text-white text-sm px-4 py-3 rounded-xl shadow-lg z-50 flex items-center gap-2';
+  toast.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Data berhasil diperbarui';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 2500);
+}
+
+// Close modal on backdrop click
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// =================== INIT ===================
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date();
+  document.getElementById('topbarDate').textContent = formatDate(d);
+  document.getElementById('datePicker').value = toInputDate(d);
+  document.getElementById('dateLabel').textContent = formatDate(d);
+  renderHarianTable();
+  renderBulananTable();
+});
+</script>
+</body>
+</html>

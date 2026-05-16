@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pelayanan Surat — Backoffice Kalurahan Bokoharjo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=General+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: { extend: { colors: {
+      primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+      earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+      accent:'#e8a838', dark:'#1a2e1a'
+    }}}
+  }
+</script>
+<style>
+  * { font-family: 'General Sans', system-ui, sans-serif; }
+  .font-display { font-family: 'DM Serif Display', serif; }
+
+  #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+  @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+  #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+  #sidebarBackdrop.show { display:block; }
+  .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+  .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+  .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+  .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+  .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+  .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+  .nav-badge.red { background:#ef4444; color:#fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+  /* Status badge */
+  .badge-menunggu  { background: #fef3c7; color: #92400e; }
+  .badge-diproses  { background: #dbeafe; color: #1e40af; }
+  .badge-selesai   { background: #d1fae5; color: #065f46; }
+  .badge-ditolak   { background: #fee2e2; color: #991b1b; }
+
+  /* Tab active */
+  .tab-btn.active { border-bottom: 2px solid #16a34a; color: #166534; font-weight: 600; }
+  .tab-btn { border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab-btn:hover:not(.active) { color: #374151; border-bottom-color: #d1d5db; }
+
+  /* Table row hover */
+  tbody tr:hover { background: #f8fafc; }
+
+  /* Modal */
+  .modal-overlay { backdrop-filter: blur(4px); }
+
+  /* Timeline */
+  .timeline-step { position: relative; flex: 1; }
+  .timeline-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 12px; left: calc(50% + 12px);
+    width: calc(100% - 24px); height: 2px;
+    background: #e5e7eb;
+  }
+  .timeline-step.done:not(:last-child)::after { background: #16a34a; }
+
+  /* Checkbox custom */
+  input[type="checkbox"] { accent-color: #16a34a; }
+
+  /* Button loading */
+  .btn-loading { opacity: 0.7; pointer-events: none; }
+
+  /* Animate fade */
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+  .fade-in { animation: fadeIn 0.2s ease forwards; }
+
+  /* Toast */
+  .toast { transform: translateX(120%); transition: transform 0.35s ease; }
+  .toast.show { transform: translateX(0); }
+</style>
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden">
+
+<!-- SIDEBAR BACKDROP -->
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0">
+      <div class="min-w-0">
+        <p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p>
+        <p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Dashboard
+    </a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item active">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Layanan Surat
+      <span class="nav-badge" id="sidebarBadgeMenunggu">5</span>
+    </a>
+    <a href="admin-pengaduan.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>
+      Pengaduan Warga
+      <span class="nav-badge red">3</span>
+    </a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+      Berita &amp; Kegiatan
+    </a>
+    <a href="admin-galeri.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Galeri Foto
+    </a>
+    <a href="admin-dokumen.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      Dokumen &amp; APBDes
+    </a>
+    <a href="admin-profil.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+      Profil Kalurahan
+    </a>
+        <a href="admin-umkm.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>
+      UMKM
+    </a>
+    <a href="admin-wisata.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Wisata Desa
+    </a>
+    <a href="admin-pertanian.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Pertanian
+    </a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-warga.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Data Warga</a>
+    <a href="admin-absensi.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Absensi Perangkat
+    </a>
+    <div class="mt-2 pt-2 border-t border-white/10">
+      <a href="index.html" target="_blank" class="nav-item">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        Portal Kalurahan
+      </a>
+    </div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p>
+        <p class="text-green-400/50 text-xs">Operator Kalurahan</p>
+      </div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      Keluar
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+
+  <!-- TOPBAR -->
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-1.5 text-sm flex-1">
+      <a href="admin-dashboard.html" class="text-gray-400 hover:text-gray-600 transition-colors">Dashboard</a>
+      <svg style="width:14px;height:14px" class="text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+      </svg>
+      <span class="text-gray-700 font-medium">Pelayanan Surat</span>
+    </nav>
+    <div class="flex items-center gap-2">
+      <button disabled title="Fitur ekspor tidak tersedia di demo" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-lg cursor-not-allowed">
+        <svg style="width:15px;height:15px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span class="hidden sm:inline">Export</span>
+      </button>
+      <button class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100">
+        <svg style="width:18px;height:18px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+        </svg>
+        <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE CONTENT -->
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6 space-y-5">
+
+    <!-- Page title -->
+    <div>
+      <h1 class="text-xl font-bold text-gray-900">Pelayanan Surat</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Kelola pengajuan surat warga Kalurahan Bokoharjo</p>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm px-4 py-3.5">
+        <p class="text-xs text-gray-500 font-medium">Total</p>
+        <p class="text-2xl font-bold text-gray-900 mt-0.5" id="statTotal">48</p>
+        <p class="text-xs text-gray-400 mt-0.5">pengajuan</p>
+      </div>
+      <div class="bg-white rounded-xl border border-amber-100 shadow-sm px-4 py-3.5">
+        <p class="text-xs text-amber-600 font-medium">Menunggu</p>
+        <p class="text-2xl font-bold text-amber-600 mt-0.5" id="statMenunggu">5</p>
+        <p class="text-xs text-gray-400 mt-0.5">perlu ditangani</p>
+      </div>
+      <div class="bg-white rounded-xl border border-blue-100 shadow-sm px-4 py-3.5">
+        <p class="text-xs text-blue-600 font-medium">Diproses</p>
+        <p class="text-2xl font-bold text-blue-600 mt-0.5" id="statDiproses">8</p>
+        <p class="text-xs text-gray-400 mt-0.5">sedang berjalan</p>
+      </div>
+      <div class="bg-white rounded-xl border border-green-100 shadow-sm px-4 py-3.5">
+        <p class="text-xs text-green-700 font-medium">Selesai</p>
+        <p class="text-2xl font-bold text-green-700 mt-0.5" id="statSelesai">32</p>
+        <p class="text-xs text-gray-400 mt-0.5">telah selesai</p>
+      </div>
+      <div class="bg-white rounded-xl border border-red-100 shadow-sm px-4 py-3.5 col-span-2 sm:col-span-1">
+        <p class="text-xs text-red-600 font-medium">Ditolak</p>
+        <p class="text-2xl font-bold text-red-600 mt-0.5" id="statDitolak">3</p>
+        <p class="text-xs text-gray-400 mt-0.5">tidak memenuhi</p>
+      </div>
+    </div>
+
+    <!-- FILTER & SEARCH -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm">
+      <!-- Tabs -->
+      <div class="flex items-center gap-0 border-b border-gray-100 px-4 overflow-x-auto">
+        <button class="tab-btn active px-3 py-3.5 text-sm text-primary-700 whitespace-nowrap" data-filter="semua" onclick="setFilter('semua', this)">
+          Semua <span class="ml-1 bg-gray-100 text-gray-600 text-xs font-medium px-1.5 py-0.5 rounded-full" id="tabCountSemua">48</span>
+        </button>
+        <button class="tab-btn px-3 py-3.5 text-sm text-gray-500 whitespace-nowrap" data-filter="menunggu" onclick="setFilter('menunggu', this)">
+          Menunggu <span class="ml-1 bg-amber-50 text-amber-600 text-xs font-medium px-1.5 py-0.5 rounded-full" id="tabCountMenunggu">5</span>
+        </button>
+        <button class="tab-btn px-3 py-3.5 text-sm text-gray-500 whitespace-nowrap" data-filter="diproses" onclick="setFilter('diproses', this)">
+          Diproses <span class="ml-1 bg-blue-50 text-blue-600 text-xs font-medium px-1.5 py-0.5 rounded-full" id="tabCountDiproses">8</span>
+        </button>
+        <button class="tab-btn px-3 py-3.5 text-sm text-gray-500 whitespace-nowrap" data-filter="selesai" onclick="setFilter('selesai', this)">
+          Selesai <span class="ml-1 bg-green-50 text-green-700 text-xs font-medium px-1.5 py-0.5 rounded-full" id="tabCountSelesai">32</span>
+        </button>
+        <button class="tab-btn px-3 py-3.5 text-sm text-gray-500 whitespace-nowrap" data-filter="ditolak" onclick="setFilter('ditolak', this)">
+          Ditolak <span class="ml-1 bg-red-50 text-red-600 text-xs font-medium px-1.5 py-0.5 rounded-full" id="tabCountDitolak">3</span>
+        </button>
+      </div>
+
+      <!-- Search & Filter row -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4">
+        <div class="relative flex-1 max-w-sm">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" style="width:16px;height:16px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="searchInput" type="text" placeholder="Cari nama, NIK, atau no. pengajuan..." oninput="doSearch()" class="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-300 focus:border-transparent bg-gray-50"/>
+        </div>
+        <div class="flex gap-2">
+          <select id="filterJenis" onchange="doSearch()" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300 bg-gray-50 text-gray-600">
+            <option value="">Semua Jenis Surat</option>
+            <option>Surat Keterangan Domisili</option>
+            <option>SKTM</option>
+            <option>Pengantar KTP/KK</option>
+            <option>Pengantar Nikah (N1/N2/N4)</option>
+            <option>Surat Keterangan Usaha</option>
+            <option>SKCK</option>
+            <option>Keterangan Kelahiran</option>
+            <option>Izin Keramaian</option>
+            <option>Surat Pindah</option>
+          </select>
+          <select id="filterTgl" onchange="doSearch()" class="text-sm border border-gray-200 rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300 bg-gray-50 text-gray-600">
+            <option value="">Semua Tanggal</option>
+            <option>13 Mei 2025</option>
+            <option>14 Mei 2025</option>
+            <option>15 Mei 2025</option>
+            <option>16 Mei 2025</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-y border-gray-100 bg-gray-50/70">
+              <th class="px-4 py-3 w-10">
+                <input type="checkbox" id="checkAll" onchange="toggleCheckAll(this)" class="rounded">
+              </th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">No. Pengajuan</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">Nama Warga</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell whitespace-nowrap">NIK</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Jenis Surat</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden sm:table-cell whitespace-nowrap">Tgl Pengajuan</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody" class="divide-y divide-gray-50">
+            <!-- Rendered by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state -->
+      <div id="emptyState" class="hidden py-16 text-center">
+        <svg class="mx-auto text-gray-300 mb-3" style="width:48px;height:48px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <p class="text-gray-400 text-sm font-medium">Tidak ada pengajuan ditemukan</p>
+        <p class="text-gray-300 text-xs mt-1">Coba ubah kata kunci atau filter</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3.5 border-t border-gray-100">
+        <p class="text-sm text-gray-500" id="paginationInfo">Menampilkan 1–10 dari 10 pengajuan</p>
+        <div class="flex items-center gap-1">
+          <button id="btnPrev" onclick="changePage(-1)" class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            ← Sebelumnya
+          </button>
+          <span class="px-3 py-1.5 text-sm bg-primary-600 text-white rounded-lg font-medium" id="currentPageBadge">1</span>
+          <button id="btnNext" onclick="changePage(1)" class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-500 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+            Selanjutnya →
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="flex-shrink-0 px-6 py-3 text-center text-xs text-gray-400 border-t border-gray-100 bg-white">
+    &copy; 2025 Kalurahan Bokoharjo &mdash; Backoffice v1.0 &bull; <span class="text-gray-300">Demo / Prototype</span>
+  </footer>
+</div>
+
+<!-- MODAL DETAIL -->
+<div id="modalOverlay" class="modal-overlay fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4" onclick="closeModalOutside(event)">
+  <div id="modalCard" class="fade-in bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <!-- Modal header -->
+    <div class="flex items-start justify-between p-5 border-b border-gray-100">
+      <div>
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-wider">Detail Pengajuan</p>
+        <h2 class="text-lg font-bold text-gray-900 mt-0.5" id="modalId">SK-2025-008</h2>
+      </div>
+      <div class="flex items-center gap-3">
+        <span id="modalBadge" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
+        <button onclick="closeModal()" class="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all">
+          <svg style="width:18px;height:18px" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal body -->
+    <div class="p-5 space-y-5">
+      <!-- Informasi pemohon -->
+      <div>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Informasi Pemohon</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">Nama Lengkap</p>
+            <p class="text-sm font-semibold text-gray-900 mt-0.5" id="mNama">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">NIK</p>
+            <p class="text-sm font-mono font-semibold text-gray-900 mt-0.5" id="mNik">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">No. WhatsApp</p>
+            <p class="text-sm font-semibold text-gray-900 mt-0.5" id="mWa">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">Alamat</p>
+            <p class="text-sm font-semibold text-gray-900 mt-0.5" id="mAlamat">Kalurahan Bokoharjo, RT 02 / RW 01</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">Jenis Surat</p>
+            <p class="text-sm font-semibold text-gray-900 mt-0.5" id="mJenis">—</p>
+          </div>
+          <div class="bg-gray-50 rounded-xl p-3">
+            <p class="text-xs text-gray-400">Tanggal Pengajuan</p>
+            <p class="text-sm font-semibold text-gray-900 mt-0.5" id="mTgl">—</p>
+          </div>
+        </div>
+        <div class="bg-gray-50 rounded-xl p-3 mt-3">
+          <p class="text-xs text-gray-400">Keperluan / Keterangan</p>
+          <p class="text-sm text-gray-700 mt-1" id="mKeperluan">—</p>
+        </div>
+      </div>
+
+      <!-- Timeline -->
+      <div>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Status Pengajuan</p>
+        <div class="flex items-start" id="timelineContainer">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Catatan operator -->
+      <div>
+        <label class="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">Catatan Operator</label>
+        <textarea id="modalCatatan" rows="3" placeholder="Tambahkan catatan untuk pemohon atau internal..." class="w-full text-sm border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary-300 resize-none bg-gray-50/50"></textarea>
+      </div>
+    </div>
+
+    <!-- Modal footer / actions -->
+    <div id="modalActions" class="flex items-center justify-end gap-3 px-5 py-4 border-t border-gray-100 bg-gray-50/50 rounded-b-2xl">
+      <!-- Rendered by JS based on status -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast fixed bottom-5 right-5 z-[60] flex items-center gap-3 bg-gray-900 text-white text-sm px-4 py-3 rounded-xl shadow-xl max-w-xs">
+  <svg id="toastIcon" style="width:18px;height:18px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+  </svg>
+  <span id="toastMsg">Berhasil!</span>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+// ========== SIDEBAR ==========
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarBackdrop').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// ========== DATA ==========
+const pengajuanData = [
+  { id: 'SK-2025-008', nama: 'Budi Santoso',    nik: '6402015557260001', jenis: 'Surat Keterangan Domisili',   tgl: '16 Mei 2025', status: 'menunggu', wa: '08555726789', keperluan: 'Untuk keperluan pembuatan rekening bank' },
+  { id: 'SK-2025-007', nama: 'Siti Rahayu',     nik: '6402015678900002', jenis: 'SKTM',                       tgl: '16 Mei 2025', status: 'diproses', wa: '08234567890', keperluan: 'Untuk beasiswa pendidikan anak' },
+  { id: 'SK-2025-006', nama: 'Ahmad Fauzi',     nik: '6402019876540003', jenis: 'Pengantar KTP/KK',           tgl: '15 Mei 2025', status: 'selesai',  wa: '08345678901', keperluan: 'Perpanjangan KTP' },
+  { id: 'SK-2025-005', nama: 'Dewi Lestari',    nik: '6402011122330004', jenis: 'Pengantar Nikah (N1/N2/N4)', tgl: '15 Mei 2025', status: 'selesai',  wa: '08456789012', keperluan: 'Pernikahan tanggal 20 Mei 2025' },
+  { id: 'SK-2025-004', nama: 'Rudi Hartono',    nik: '6402014455660005', jenis: 'Surat Keterangan Usaha',     tgl: '14 Mei 2025', status: 'ditolak',  wa: '08567890123', keperluan: 'Data tidak lengkap' },
+  { id: 'SK-2025-003', nama: 'Mira Susanti',    nik: '6402017788990006', jenis: 'Surat Keterangan Domisili',  tgl: '14 Mei 2025', status: 'selesai',  wa: '08678901234', keperluan: 'Keperluan melamar kerja' },
+  { id: 'SK-2025-002', nama: 'Hendra Wijaya',   nik: '6402010011220007', jenis: 'SKCK',                       tgl: '13 Mei 2025', status: 'selesai',  wa: '08789055572', keperluan: 'Keperluan melamar kerja di perusahaan swasta' },
+  { id: 'SK-2025-001', nama: 'Yuli Astuti',     nik: '6402013344550008', jenis: 'Keterangan Kelahiran',       tgl: '13 Mei 2025', status: 'selesai',  wa: '08890555726', keperluan: 'Untuk akte kelahiran anak' },
+  { id: 'SK-2025-009', nama: 'Bagas Prasetyo',  nik: '6402016677880009', jenis: 'Izin Keramaian',             tgl: '16 Mei 2025', status: 'menunggu', wa: '08905557267', keperluan: 'Acara sunatan 25 Mei 2025' },
+  { id: 'SK-2025-010', nama: 'Rina Marlina',    nik: '6402019900110010', jenis: 'Surat Pindah',               tgl: '15 Mei 2025', status: 'diproses', wa: '08055572678', keperluan: 'Pindah ke Kota Balikpapan' },
+];
+
+// ========== STATE ==========
+let currentFilter  = 'semua';
+let currentSearch  = '';
+let currentJenis   = '';
+let currentTgl     = '';
+let currentPage    = 1;
+const PAGE_SIZE    = 10;
+let activeModal    = null;
+
+// ========== HELPERS ==========
+const statusLabel = { menunggu: 'Menunggu', diproses: 'Diproses', selesai: 'Selesai', ditolak: 'Ditolak' };
+
+function badgeClass(status) {
+  const map = { menunggu:'badge-menunggu', diproses:'badge-diproses', selesai:'badge-selesai', ditolak:'badge-ditolak' };
+  return map[status] || '';
+}
+
+function getFiltered() {
+  return pengajuanData.filter(row => {
+    const matchFilter = currentFilter === 'semua' || row.status === currentFilter;
+    const q = currentSearch.toLowerCase();
+    const matchSearch = !q || row.nama.toLowerCase().includes(q) || row.nik.includes(q) || row.id.toLowerCase().includes(q);
+    const matchJenis  = !currentJenis || row.jenis === currentJenis;
+    const matchTgl    = !currentTgl  || row.tgl === currentTgl;
+    return matchFilter && matchSearch && matchJenis && matchTgl;
+  });
+}
+
+function countByStatus(s) {
+  return pengajuanData.filter(r => r.status === s).length;
+}
+
+function updateCounts() {
+  const total = pengajuanData.length;
+  const m = countByStatus('menunggu');
+  const d = countByStatus('diproses');
+  const s = countByStatus('selesai');
+  const t = countByStatus('ditolak');
+
+  document.getElementById('statTotal').textContent    = total;
+  document.getElementById('statMenunggu').textContent  = m;
+  document.getElementById('statDiproses').textContent  = d;
+  document.getElementById('statSelesai').textContent   = s;
+  document.getElementById('statDitolak').textContent   = t;
+
+  document.getElementById('tabCountSemua').textContent    = total;
+  document.getElementById('tabCountMenunggu').textContent  = m;
+  document.getElementById('tabCountDiproses').textContent  = d;
+  document.getElementById('tabCountSelesai').textContent   = s;
+  document.getElementById('tabCountDitolak').textContent   = t;
+
+  // Badge in sidebar
+  const sidebarBadge = document.getElementById('sidebarBadgeMenunggu');
+  if (sidebarBadge) sidebarBadge.textContent = m;
+}
+
+// ========== RENDER TABLE ==========
+function renderTable() {
+  const filtered = getFiltered();
+  const total    = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (currentPage > totalPages) currentPage = 1;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = filtered.slice(start, start + PAGE_SIZE);
+
+  const tbody = document.getElementById('tableBody');
+  const empty = document.getElementById('emptyState');
+
+  if (slice.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    tbody.innerHTML = slice.map(row => {
+      const idx = pengajuanData.indexOf(row);
+      const badge = badgeClass(row.status);
+      let actions = '';
+      if (row.status === 'menunggu') {
+        actions = `
+          <button onclick="openModal(${idx})" class="text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 px-2.5 py-1.5 rounded-lg transition-all">Detail</button>
+          <button onclick="updateStatus(${idx},'diproses')" class="text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-all">Proses</button>
+          <button onclick="updateStatus(${idx},'ditolak')" class="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-all">Tolak</button>`;
+      } else if (row.status === 'diproses') {
+        actions = `
+          <button onclick="openModal(${idx})" class="text-xs font-medium text-primary-700 bg-primary-50 hover:bg-primary-100 px-2.5 py-1.5 rounded-lg transition-all">Detail</button>
+          <button onclick="updateStatus(${idx},'selesai')" class="text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1.5 rounded-lg transition-all">Selesaikan</button>`;
+      } else {
+        actions = `<button onclick="openModal(${idx})" class="text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 px-2.5 py-1.5 rounded-lg transition-all">Detail</button>`;
+      }
+      return `
+        <tr class="transition-colors">
+          <td class="px-4 py-3"><input type="checkbox" class="row-check rounded" data-idx="${idx}"></td>
+          <td class="px-4 py-3 whitespace-nowrap">
+            <span class="font-mono text-xs font-semibold text-gray-700">${row.id}</span>
+          </td>
+          <td class="px-4 py-3">
+            <p class="font-medium text-gray-900 text-sm">${row.nama}</p>
+          </td>
+          <td class="px-4 py-3 hidden md:table-cell">
+            <span class="font-mono text-xs text-gray-500">${row.nik}</span>
+          </td>
+          <td class="px-4 py-3 hidden lg:table-cell">
+            <span class="text-sm text-gray-600">${row.jenis}</span>
+          </td>
+          <td class="px-4 py-3 hidden sm:table-cell whitespace-nowrap">
+            <span class="text-sm text-gray-500">${row.tgl}</span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badge}">${statusLabel[row.status]}</span>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1.5 flex-wrap">${actions}</div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // Pagination info
+  const from = total === 0 ? 0 : start + 1;
+  const to   = Math.min(start + PAGE_SIZE, total);
+  document.getElementById('paginationInfo').textContent = `Menampilkan ${from}–${to} dari ${total} pengajuan`;
+  document.getElementById('currentPageBadge').textContent = currentPage;
+  document.getElementById('btnPrev').disabled = currentPage <= 1;
+  document.getElementById('btnNext').disabled = currentPage >= totalPages;
+
+  updateCounts();
+}
+
+// ========== FILTER & SEARCH ==========
+function setFilter(f, btn) {
+  currentFilter = f;
+  currentPage   = 1;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function doSearch() {
+  currentSearch = document.getElementById('searchInput').value;
+  currentJenis  = document.getElementById('filterJenis').value;
+  currentTgl    = document.getElementById('filterTgl').value;
+  currentPage   = 1;
+  renderTable();
+}
+
+// ========== PAGINATION ==========
+function changePage(dir) {
+  const filtered   = getFiltered();
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  currentPage = Math.min(Math.max(1, currentPage + dir), totalPages);
+  renderTable();
+}
+
+// ========== UPDATE STATUS ==========
+function updateStatus(idx, newStatus, catatan) {
+  pengajuanData[idx].status = newStatus;
+  if (catatan) pengajuanData[idx].catatan = catatan;
+  closeModal();
+  renderTable();
+  showToast(newStatus);
+}
+
+function showToast(status) {
+  const msgs = { diproses: 'Pengajuan sedang diproses', selesai: 'Pengajuan telah diselesaikan', ditolak: 'Pengajuan telah ditolak' };
+  const colors = { diproses: '#1d4ed8', selesai: '#065f46', ditolak: '#991b1b' };
+  const toast = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msgs[status] || 'Status diperbarui';
+  toast.style.background = colors[status] || '#111827';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ========== MODAL ==========
+const timelineSteps = [
+  { key: 'diterima',    label: 'Diterima' },
+  { key: 'diverifikasi',label: 'Diverifikasi' },
+  { key: 'diproses',    label: 'Diproses' },
+  { key: 'selesai',     label: 'Selesai' },
+];
+
+function getStepIndex(status) {
+  const map = { menunggu: 0, diproses: 2, selesai: 3, ditolak: 0 };
+  return map[status] !== undefined ? map[status] : 0;
+}
+
+function openModal(idx) {
+  const row = pengajuanData[idx];
+  activeModal = idx;
+
+  document.getElementById('modalId').textContent     = row.id;
+  document.getElementById('mNama').textContent       = row.nama;
+  document.getElementById('mNik').textContent        = row.nik;
+  document.getElementById('mWa').textContent         = row.wa;
+  document.getElementById('mJenis').textContent      = row.jenis;
+  document.getElementById('mTgl').textContent        = row.tgl;
+  document.getElementById('mKeperluan').textContent  = row.keperluan;
+  document.getElementById('modalCatatan').value      = row.catatan || '';
+
+  // Alamat dummy per row (deterministic variety)
+  const rt = (idx % 5) + 1;
+  const rw = Math.floor(idx / 5) + 1;
+  document.getElementById('mAlamat').textContent = `Kalurahan Bokoharjo, RT 0${rt} / RW 0${rw}`;
+
+  // Badge
+  const badge = document.getElementById('modalBadge');
+  badge.className = `text-xs font-semibold px-2.5 py-1 rounded-full ${badgeClass(row.status)}`;
+  badge.textContent = statusLabel[row.status];
+
+  // Timeline
+  const doneIdx = getStepIndex(row.status);
+  const isDitolak = row.status === 'ditolak';
+  const tl = document.getElementById('timelineContainer');
+  tl.innerHTML = timelineSteps.map((step, i) => {
+    const done     = !isDitolak && i <= doneIdx;
+    const active   = !isDitolak && i === doneIdx;
+    const dotColor = isDitolak && i === 0 ? 'bg-red-400' : done ? 'bg-primary-500' : 'bg-gray-200';
+    const textColor= done ? 'text-gray-800' : 'text-gray-400';
+    const lineDone = !isDitolak && i < doneIdx;
+    return `
+      <div class="timeline-step${lineDone ? ' done' : ''} flex flex-col items-center text-center px-1">
+        <div class="w-6 h-6 rounded-full ${dotColor} flex items-center justify-center mb-1.5 relative z-10">
+          ${done ? '<svg style="width:12px;height:12px" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>' : `<span class="w-2 h-2 rounded-full bg-white/60 block"></span>`}
+        </div>
+        <p class="text-xs font-medium ${textColor}">${step.label}</p>
+        ${active ? '<p class="text-xs text-primary-500 font-semibold">Saat ini</p>' : ''}
+      </div>`;
+  }).join('');
+
+  if (isDitolak) {
+    tl.insertAdjacentHTML('beforeend', `
+      <div class="timeline-step flex flex-col items-center text-center px-1">
+        <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center mb-1.5">
+          <svg style="width:12px;height:12px" fill="none" stroke="#dc2626" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+        </div>
+        <p class="text-xs font-medium text-red-600">Ditolak</p>
+        <p class="text-xs text-red-400 font-semibold">Saat ini</p>
+      </div>`);
+  }
+
+  // Action buttons
+  const actions = document.getElementById('modalActions');
+  let btnHtml = `<button onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Tutup</button>`;
+  if (row.status === 'menunggu') {
+    btnHtml = `
+      <button onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Batal</button>
+      <button onclick="doModalAction('ditolak')" class="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-xl transition-all">Tolak Pengajuan</button>
+      <button onclick="doModalAction('diproses')" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all">Proses Sekarang</button>`;
+  } else if (row.status === 'diproses') {
+    btnHtml = `
+      <button onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all">Batal</button>
+      <button onclick="doModalAction('selesai')" class="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-all">Selesaikan</button>`;
+  }
+  actions.innerHTML = btnHtml;
+
+  // Show modal
+  const overlay = document.getElementById('modalOverlay');
+  overlay.classList.remove('hidden');
+  overlay.classList.add('flex');
+  document.body.style.overflow = 'hidden';
+}
+
+function doModalAction(newStatus) {
+  const catatan = document.getElementById('modalCatatan').value;
+  updateStatus(activeModal, newStatus, catatan);
+}
+
+function closeModal() {
+  const overlay = document.getElementById('modalOverlay');
+  overlay.classList.add('hidden');
+  overlay.classList.remove('flex');
+  document.body.style.overflow = '';
+  activeModal = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModal();
+}
+
+// ========== CHECKBOX SELECT ALL ==========
+function toggleCheckAll(el) {
+  document.querySelectorAll('.row-check').forEach(cb => cb.checked = el.checked);
+}
+
+// ========== KEYBOARD ==========
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ========== INIT ==========
+renderTable();
+</script>
+</body>
+</html>
