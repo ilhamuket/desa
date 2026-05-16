@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profil Kalurahan – Admin Bokoharjo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+        earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+        accent:'#e8a838', dark:'#1a2e1a'
+      }}}
+    }
+  </script>
+  <style>
+    #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+    @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+    #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+    #sidebarBackdrop.show { display:block; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+    .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+    .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+    .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+    .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+    .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+    .nav-badge.red { background:#ef4444; color:#fff; }
+    .tab-btn { padding:8px 14px; font-size:13px; font-weight:600; border-radius:8px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+    .tab-btn.active { background:#16a34a; color:#fff; }
+    .tab-btn:not(.active) { color:#6b7280; }
+    .tab-btn:not(.active):hover { background:#f3f4f6; color:#374151; }
+    .form-label { display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:5px; }
+    .form-input { width:100%; border:1px solid #e5e7eb; border-radius:8px; padding:8px 12px; font-size:14px; color:#1f2937; transition:all .15s; outline:none; }
+    .form-input:focus { border-color:#86efac; box-shadow:0 0 0 3px rgba(134,239,172,.2); }
+    .misi-item:hover .misi-del { opacity:1; }
+    .misi-del { opacity:0; transition:opacity .15s; }
+    .toast { position:fixed; bottom:24px; right:24px; z-index:999; background:#1a2e1a; color:#fff; padding:12px 20px; border-radius:12px; font-size:14px; font-weight:500; box-shadow:0 8px 24px rgba(0,0,0,.2); transform:translateY(80px); opacity:0; transition:all .3s; }
+    .toast.show { transform:translateY(0); opacity:1; }
+    .bar-container { background:#f3f4f6; border-radius:999px; height:10px; overflow:hidden; }
+    .bar-fill { height:100%; border-radius:999px; transition:width .6s ease; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0" onerror="this.style.display='none'">
+      <div class="min-w-0"><p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p><p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p></div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Layanan Surat<span class="nav-badge">5</span></a>
+    <a href="admin-pengaduan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>Pengaduan Warga<span class="nav-badge red">3</span></a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>Berita & Kegiatan</a>
+    <a href="admin-galeri.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Galeri Foto</a>
+    <a href="admin-dokumen.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Dokumen & APBDes</a>
+    <a href="admin-profil.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Profil Kalurahan</a>
+        <a href="admin-umkm.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>
+      UMKM
+    </a>
+    <a href="admin-wisata.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Wisata Desa
+    </a>
+    <a href="admin-pertanian.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Pertanian
+    </a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-warga.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Data Warga</a>
+    <a href="admin-absensi.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Absensi Perangkat</a>
+    <div class="mt-2 pt-2 border-t border-white/10"><a href="index.html" target="_blank" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Portal Kalurahan</a></div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0"><p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p><p class="text-green-400/50 text-xs">Operator Kalurahan</p></div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Keluar</a>
+  </div>
+</aside>
+
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1">
+      <h1 class="text-base font-bold text-gray-800">Profil Kalurahan</h1>
+      <p class="text-xs text-gray-400 hidden sm:block">Kelola informasi dan data profil Kalurahan Bokoharjo</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400 hidden sm:block">Terakhir disimpan: 10 Mei 2025, 14:32</span>
+      <div class="w-2 h-2 rounded-full bg-green-400"></div>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6">
+    <!-- Tab Navigation -->
+    <div class="flex gap-1.5 bg-white rounded-xl p-1.5 w-full overflow-x-auto shadow-sm border border-gray-100 mb-5">
+      <button class="tab-btn active" onclick="switchTab('info', this)">Info Umum</button>
+      <button class="tab-btn" onclick="switchTab('visi', this)">Visi & Misi</button>
+      <button class="tab-btn" onclick="switchTab('sejarah', this)">Sejarah</button>
+      <button class="tab-btn" onclick="switchTab('struktur', this)">Struktur Pemerintahan</button>
+      <button class="tab-btn" onclick="switchTab('demografi', this)">Demografi</button>
+    </div>
+
+    <!-- TAB INFO UMUM -->
+    <div id="tab-info" class="space-y-5">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <!-- Form -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-semibold text-gray-800">Informasi Umum Kalurahan</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Data identitas resmi kalurahan yang tampil di portal publik</p>
+          </div>
+          <div class="px-6 py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="sm:col-span-2">
+              <label class="form-label">Nama Kalurahan</label>
+              <input type="text" class="form-input" value="Kalurahan Bokoharjo">
+            </div>
+            <div>
+              <label class="form-label">Kode Wilayah</label>
+              <input type="text" class="form-input" value="34.04.16.2010">
+            </div>
+            <div>
+              <label class="form-label">Kode Pos</label>
+              <input type="text" class="form-input" value="55572">
+            </div>
+            <div>
+              <label class="form-label">Kecamatan</label>
+              <input type="text" class="form-input" value="Prambanan">
+            </div>
+            <div>
+              <label class="form-label">Kabupaten</label>
+              <input type="text" class="form-input" value="Sleman">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="form-label">Provinsi</label>
+              <input type="text" class="form-input" value="Daerah Istimewa Yogyakarta">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="form-label">Alamat Kantor</label>
+              <input type="text" class="form-input" value="Jl. Prambanan – Piyungan Km. 1, Bokoharjo, Prambanan, Sleman, DIY">
+            </div>
+            <div>
+              <label class="form-label">Telepon</label>
+              <input type="text" class="form-input" value="(0274) 497856">
+            </div>
+            <div>
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" value="pemdesbokoharjo@gmail.com">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="form-label">Website Resmi</label>
+              <input type="url" class="form-input" value="https://bokoharjosid.slemankab.go.id/">
+            </div>
+            <div class="sm:col-span-2">
+              <label class="form-label">Embed Google Maps (iframe src)</label>
+              <textarea rows="3" class="form-input resize-none text-xs font-mono" id="mapsEmbed">https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1226.3749555601785!2d110.488017!3d-7.765899000000001!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5aedb4e75bd1%3A0xb7e741a68cad9f8f!2sKantor%20Lurah%20Desa%20Bokoharjo!5e1!3m2!1sen!2sid!4v1778902455974!5m2!1sen!2sid</textarea>
+            </div>
+          </div>
+          <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+            <button onclick="showToast('Perubahan berhasil disimpan!')" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">Simpan Perubahan</button>
+          </div>
+        </div>
+
+        <!-- Maps Preview -->
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-100">
+              <h4 class="text-sm font-semibold text-gray-700">Preview Peta Lokasi</h4>
+            </div>
+            <div class="p-3">
+              <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d1226.3749555601785!2d110.488017!3d-7.765899000000001!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a5aedb4e75bd1%3A0xb7e741a68cad9f8f!2sKantor%20Lurah%20Desa%20Bokoharjo!5e1!3m2!1sen!2sid!4v1778902455974!5m2!1sen!2sid" width="100%" height="250" style="border:0;border-radius:12px;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-3">
+            <h4 class="text-sm font-semibold text-gray-700">Statistik Profil</h4>
+            <div class="flex justify-between items-center py-2 border-b border-gray-50">
+              <span class="text-xs text-gray-500">Dilihat Bulan Ini</span>
+              <span class="text-sm font-bold text-gray-700">1.247</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-gray-50">
+              <span class="text-xs text-gray-500">Pengunjung Unik</span>
+              <span class="text-sm font-bold text-gray-700">892</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="text-xs text-gray-500">Terakhir Update</span>
+              <span class="text-xs font-semibold text-primary-600">10 Mei 2025</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB VISI & MISI -->
+    <div id="tab-visi" class="hidden space-y-5">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h3 class="font-semibold text-gray-800">Visi Kalurahan</h3>
+        </div>
+        <div class="px-6 py-5">
+          <textarea rows="4" class="form-input resize-none">Terwujudnya Kalurahan Bokoharjo yang Maju, Mandiri, dan Sejahtera Berbasis Potensi Lokal</textarea>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-gray-800">Misi Kalurahan</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Klik item misi untuk mengedit. Drag untuk mengurutkan.</p>
+          </div>
+          <button onclick="tambahMisi()" class="flex items-center gap-1.5 text-sm font-semibold text-primary-600 hover:text-primary-700 bg-primary-50 hover:bg-primary-100 px-3 py-1.5 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Tambah Misi
+          </button>
+        </div>
+        <div class="px-6 py-4" id="misiList">
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+          <button onclick="showToast('Visi & Misi berhasil disimpan!')" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB SEJARAH -->
+    <div id="tab-sejarah" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h3 class="font-semibold text-gray-800">Sejarah Kalurahan Bokoharjo</h3>
+          <p class="text-xs text-gray-500 mt-0.5">Konten sejarah yang akan ditampilkan di halaman Sejarah portal publik</p>
+        </div>
+        <div class="px-6 py-2 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-1">
+          <button onclick="showToast('Format teks: Bold')" class="px-2 py-1 text-xs font-bold bg-white border border-gray-200 rounded hover:bg-gray-100">B</button>
+          <button onclick="showToast('Format teks: Italic')" class="px-2 py-1 text-xs italic bg-white border border-gray-200 rounded hover:bg-gray-100">I</button>
+          <button onclick="showToast('Format teks: Underline')" class="px-2 py-1 text-xs underline bg-white border border-gray-200 rounded hover:bg-gray-100">U</button>
+          <div class="w-px bg-gray-200 mx-1"></div>
+          <button onclick="showToast('Format: Heading')" class="px-2 py-1 text-xs font-semibold bg-white border border-gray-200 rounded hover:bg-gray-100">H1</button>
+          <button onclick="showToast('Format: Subheading')" class="px-2 py-1 text-xs font-semibold bg-white border border-gray-200 rounded hover:bg-gray-100">H2</button>
+          <div class="w-px bg-gray-200 mx-1"></div>
+          <button onclick="showToast('Format: Bullet list')" class="px-2 py-1 text-xs bg-white border border-gray-200 rounded hover:bg-gray-100">&#8226; List</button>
+          <button onclick="showToast('Format: Numbered list')" class="px-2 py-1 text-xs bg-white border border-gray-200 rounded hover:bg-gray-100">1. List</button>
+        </div>
+        <div class="px-6 py-5">
+          <textarea rows="18" class="form-input resize-none leading-relaxed">Kalurahan Bokoharjo merupakan salah satu kalurahan yang berada di wilayah Kapanewon Prambanan, Kabupaten Sleman, Daerah Istimewa Yogyakarta. Secara historis, wilayah Bokoharjo telah dihuni oleh masyarakat sejak masa Kerajaan Mataram Hindu, sebagaimana dibuktikan oleh keberadaan situs-situs purbakala di sekitarnya, termasuk kawasan Candi Prambanan yang terkenal di seluruh dunia.
+
+Nama "Bokoharjo" sendiri konon berasal dari kata "Boko" yang merujuk pada nama bukit dan istana kuno yang berada di sisi timur wilayah ini, serta kata "Harjo" dalam bahasa Jawa yang berarti makmur atau sejahtera. Dengan demikian, nama Bokoharjo mengandung harapan agar wilayah ini menjadi tempat yang makmur dan sejahtera bagi seluruh warganya. Pada era kolonial Belanda, wilayah ini masuk dalam struktur pemerintahan desa yang dikelola secara adat dengan kepemimpinan seorang Lurah yang dipilih oleh warga.
+
+Setelah kemerdekaan Indonesia pada tahun 1945, Kalurahan Bokoharjo terus berkembang dan beradaptasi dengan sistem pemerintahan nasional. Berbagai program pembangunan infrastruktur dan peningkatan kesejahteraan masyarakat telah dilaksanakan dari waktu ke waktu, mulai dari pembangunan jalan, irigasi sawah, fasilitas pendidikan, hingga sarana kesehatan. Pada masa reformasi, dengan diberlakukannya Undang-Undang Nomor 6 Tahun 2014 tentang Desa, Kalurahan Bokoharjo memperoleh kewenangan yang lebih luas untuk mengelola pemerintahan dan pembangunan secara mandiri, sehingga dapat lebih responsif terhadap kebutuhan masyarakat setempat.</textarea>
+        </div>
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+          <button onclick="showToast('Sejarah berhasil disimpan!')" class="bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">Simpan</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB STRUKTUR PEMERINTAHAN -->
+    <div id="tab-struktur" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h3 class="font-semibold text-gray-800">Daftar Perangkat Kalurahan</h3>
+            <p class="text-xs text-gray-500 mt-0.5">Kelola data perangkat yang tampil di portal publik</p>
+          </div>
+          <button onclick="openPerangkatModal()" class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Tambah Perangkat
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Perangkat</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">NIP</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jabatan</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Masa Jabatan</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="perangkatTable" class="divide-y divide-gray-50">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB DEMOGRAFI -->
+    <div id="tab-demografi" class="hidden space-y-5">
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+          <div class="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mx-auto mb-2"><svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
+          <p class="text-2xl font-bold text-gray-800">3.247</p>
+          <p class="text-xs text-gray-500 mt-0.5">Total Penduduk</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+          <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2"><svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
+          <p class="text-2xl font-bold text-gray-800">1.623</p>
+          <p class="text-xs text-gray-500 mt-0.5">Laki-laki</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+          <div class="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center mx-auto mb-2"><svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div>
+          <p class="text-2xl font-bold text-gray-800">1.624</p>
+          <p class="text-xs text-gray-500 mt-0.5">Perempuan</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+          <div class="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-2"><svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg></div>
+          <p class="text-2xl font-bold text-gray-800">987</p>
+          <p class="text-xs text-gray-500 mt-0.5">Kepala Keluarga</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Bar Chart Dusun -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-semibold text-gray-800">Penduduk per Dusun</h4>
+            <span class="text-xs text-gray-400">Total: 3.247 jiwa</span>
+          </div>
+          <div class="space-y-3" id="dusunChart"></div>
+        </div>
+
+        <!-- Pie Chart Mata Pencaharian -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <h4 class="font-semibold text-gray-800 mb-4">Mata Pencaharian</h4>
+          <div class="flex items-center justify-center mb-4">
+            <!-- Donut chart CSS -->
+            <div class="relative w-36 h-36">
+              <svg viewBox="0 0 36 36" class="w-full h-full -rotate-90">
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#e5e7eb" stroke-width="3.5"/>
+                <!-- Pertanian 35% -->
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#22c55e" stroke-width="3.5" stroke-dasharray="35 65" stroke-dashoffset="0"/>
+                <!-- Perdagangan 22% -->
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#3b82f6" stroke-width="3.5" stroke-dasharray="22 78" stroke-dashoffset="-35"/>
+                <!-- PNS 15% -->
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#8b5cf6" stroke-width="3.5" stroke-dasharray="15 85" stroke-dashoffset="-57"/>
+                <!-- Buruh 18% -->
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="18 82" stroke-dashoffset="-72"/>
+                <!-- Lainnya 10% -->
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="#6b7280" stroke-width="3.5" stroke-dasharray="10 90" stroke-dashoffset="-90"/>
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center"><p class="text-xl font-bold text-gray-800">3.247</p><p class="text-xs text-gray-400">Jiwa</p></div>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-green-500"></div><span class="text-xs text-gray-600">Pertanian</span></div><span class="text-xs font-bold text-gray-700">35% (1.136)</span></div>
+            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-blue-500"></div><span class="text-xs text-gray-600">Perdagangan</span></div><span class="text-xs font-bold text-gray-700">22% (714)</span></div>
+            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-purple-500"></div><span class="text-xs text-gray-600">PNS/TNI/Polri</span></div><span class="text-xs font-bold text-gray-700">15% (487)</span></div>
+            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-amber-500"></div><span class="text-xs text-gray-600">Buruh</span></div><span class="text-xs font-bold text-gray-700">18% (584)</span></div>
+            <div class="flex items-center justify-between"><div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-gray-400"></div><span class="text-xs text-gray-600">Lainnya</span></div><span class="text-xs font-bold text-gray-700">10% (326)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="openDemografiModal()" class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          Update Data Demografi
+        </button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal Tambah Perangkat -->
+<div id="perangkatModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <h3 class="font-bold text-gray-800">Tambah Perangkat Baru</h3>
+      <button onclick="closePerangkatModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div><label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label><input type="text" placeholder="Nama dan gelar..." class="form-input"></div>
+      <div><label class="form-label">NIP</label><input type="text" placeholder="Nomor Induk Pegawai (jika ada)" class="form-input"></div>
+      <div><label class="form-label">Jabatan <span class="text-red-500">*</span></label>
+        <select class="form-input">
+          <option>Lurah</option>
+          <option>Sekretaris Lurah</option>
+          <option>Kaur Keuangan</option>
+          <option>Kaur Umum</option>
+          <option>Kaur Perencanaan</option>
+          <option>Kasi Pemerintahan</option>
+          <option>Kasi Pelayanan</option>
+          <option>Kasi Kesejahteraan</option>
+          <option>Dukuh</option>
+          <option>Staf</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="form-label">Mulai Jabatan</label><input type="text" placeholder="2020" class="form-input"></div>
+        <div><label class="form-label">Akhir Jabatan</label><input type="text" placeholder="2026" class="form-input"></div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 flex gap-3 justify-end">
+      <button onclick="closePerangkatModal()" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
+      <button onclick="submitPerangkat()" class="px-5 py-2 text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Demografi -->
+<div id="demografiModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden max-h-screen overflow-y-auto">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+      <h3 class="font-bold text-gray-800">Update Data Demografi</h3>
+      <button onclick="closeDemografiModal()" class="text-gray-400 hover:text-gray-600 p-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+    </div>
+    <div class="px-6 py-5 space-y-5">
+      <div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Data Umum</h4>
+        <div class="grid grid-cols-2 gap-3">
+          <div><label class="form-label">Total Penduduk</label><input type="number" value="3247" class="form-input"></div>
+          <div><label class="form-label">Laki-laki</label><input type="number" value="1623" class="form-input"></div>
+          <div><label class="form-label">Perempuan</label><input type="number" value="1624" class="form-input"></div>
+          <div><label class="form-label">Kepala Keluarga</label><input type="number" value="987" class="form-input"></div>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Penduduk per Dusun</h4>
+        <div class="space-y-2">
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Bokoharjo</label><input type="number" value="512" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Karang</label><input type="number" value="487" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Senden Wetan</label><input type="number" value="398" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Senden Kulon</label><input type="number" value="423" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Prambanan</label><input type="number" value="541" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Kemiri</label><input type="number" value="376" class="form-input"></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Blembem</label><input type="number" value="510" class="form-input"></div>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-sm font-semibold text-gray-700 mb-3">Mata Pencaharian (%)</h4>
+        <div class="space-y-2">
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Pertanian</label><input type="number" value="35" class="form-input"><span class="text-xs text-gray-400">%</span></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Perdagangan</label><input type="number" value="22" class="form-input"><span class="text-xs text-gray-400">%</span></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">PNS/TNI/Polri</label><input type="number" value="15" class="form-input"><span class="text-xs text-gray-400">%</span></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Buruh</label><input type="number" value="18" class="form-input"><span class="text-xs text-gray-400">%</span></div>
+          <div class="flex gap-2 items-center"><label class="text-xs text-gray-600 w-40">Lainnya</label><input type="number" value="10" class="form-input"><span class="text-xs text-gray-400">%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-4 bg-gray-50 flex gap-3 justify-end sticky bottom-0">
+      <button onclick="closeDemografiModal()" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Batal</button>
+      <button onclick="submitDemografi()" class="px-5 py-2 text-sm font-semibold bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors">Simpan Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarBackdrop').classList.add('show'); document.body.style.overflow='hidden'; }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarBackdrop').classList.remove('show'); document.body.style.overflow=''; }
+
+function switchTab(tab, btn) {
+  ['info','visi','sejarah','struktur','demografi'].forEach(t => document.getElementById('tab-'+t).classList.add('hidden'));
+  document.getElementById('tab-'+tab).classList.remove('hidden');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// --- Misi ---
+let misiList = [
+  'Meningkatkan kualitas pelayanan publik yang prima dan transparan',
+  'Mengembangkan potensi ekonomi lokal dan UMKM masyarakat',
+  'Meningkatkan kualitas infrastruktur dan fasilitas umum desa',
+  'Memberdayakan masyarakat melalui pendidikan dan pelatihan',
+  'Melestarikan budaya dan kearifan lokal Kalurahan Bokoharjo',
+];
+
+function renderMisi() {
+  document.getElementById('misiList').innerHTML = misiList.map((m, i) => `
+    <div class="misi-item flex items-center gap-3 py-2.5 border-b border-gray-50 last:border-0">
+      <div class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center flex-shrink-0">${i+1}</div>
+      <input type="text" value="${m}" class="flex-1 text-sm text-gray-700 bg-transparent border-0 outline-none focus:bg-gray-50 focus:px-2 rounded transition-all" oninput="misiList[${i}]=this.value">
+      <button onclick="hapusMisi(${i})" class="misi-del p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+}
+
+function hapusMisi(i) {
+  if (!confirm('Hapus misi ini?')) return;
+  misiList.splice(i, 1);
+  renderMisi();
+}
+
+function tambahMisi() {
+  misiList.push('Misi baru kalurahan...');
+  renderMisi();
+  const inputs = document.querySelectorAll('#misiList input');
+  const last = inputs[inputs.length - 1];
+  last.focus();
+  last.select();
+}
+
+// --- Perangkat ---
+const perangkatData = [
+  { id:1, nama:'H. Suratman, S.Sos', nip:'198205142006041012', jabatan:'Lurah', mulai:'2020', akhir:'2026', aktif:true },
+  { id:2, nama:'Drs. Bambang Supriyadi', nip:'197604212003121005', jabatan:'Sekretaris Lurah', mulai:'2020', akhir:'2026', aktif:true },
+  { id:3, nama:'Sari Dewi, SE', nip:'198811032010012008', jabatan:'Kaur Keuangan', mulai:'2021', akhir:'2027', aktif:true },
+  { id:4, nama:'Agus Prasetyo, A.Md', nip:'199002152014031003', jabatan:'Kaur Umum', mulai:'2021', akhir:'2027', aktif:true },
+  { id:5, nama:'Rini Astuti', nip:'199508222018012002', jabatan:'Kaur Perencanaan', mulai:'2021', akhir:'2027', aktif:true },
+  { id:6, nama:'Widodo Santoso', nip:'198703112009011007', jabatan:'Kasi Pemerintahan', mulai:'2020', akhir:'2026', aktif:true },
+  { id:7, nama:'Tri Wahyuni, S.Pd', nip:'199104062016012003', jabatan:'Kasi Pelayanan', mulai:'2020', akhir:'2026', aktif:true },
+  { id:8, nama:'Sugiman', nip:'198512152007011009', jabatan:'Kasi Kesejahteraan', mulai:'2020', akhir:'2026', aktif:true },
+  { id:9, nama:'Parman', nip:'-', jabatan:'Dukuh Bokoharjo', mulai:'2019', akhir:'2025', aktif:true },
+  { id:10, nama:'Lastri Rahayu', nip:'-', jabatan:'Staf Administrasi', mulai:'2022', akhir:'2028', aktif:true },
+];
+
+function getInitials(nama) {
+  return nama.split(' ').slice(0,2).map(n => n[0]).join('').toUpperCase().slice(0,2);
+}
+
+const avatarColors = ['bg-blue-500','bg-purple-500','bg-green-600','bg-amber-500','bg-pink-500','bg-cyan-600','bg-orange-500','bg-teal-600','bg-indigo-500','bg-rose-500'];
+
+function renderPerangkat() {
+  document.getElementById('perangkatTable').innerHTML = perangkatData.map((p, i) => `
+    <tr class="hover:bg-gray-50 transition-colors">
+      <td class="px-5 py-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-xs font-bold flex-shrink-0">${getInitials(p.nama)}</div>
+          <span class="text-sm font-semibold text-gray-800">${p.nama}</span>
+        </div>
+      </td>
+      <td class="px-4 py-3.5 text-xs text-gray-500 font-mono">${p.nip}</td>
+      <td class="px-4 py-3.5"><span class="text-sm font-medium text-gray-700">${p.jabatan}</span></td>
+      <td class="px-4 py-3.5 text-sm text-gray-600">${p.mulai} – ${p.akhir}</td>
+      <td class="px-4 py-3.5"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${p.aktif ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}"><span class="w-1.5 h-1.5 rounded-full ${p.aktif ? 'bg-green-500' : 'bg-gray-400'}"></span>${p.aktif ? 'Aktif' : 'Nonaktif'}</span></td>
+      <td class="px-4 py-3.5">
+        <div class="flex gap-1">
+          <button onclick="showToast('Mode edit perangkat: ${p.nama}')" class="p-1.5 text-gray-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors" title="Edit">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </button>
+          <button onclick="togglePerangkat(${p.id})" class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="${p.aktif ? 'Nonaktifkan' : 'Aktifkan'}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${p.aktif ? 'M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636' : 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'}"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function togglePerangkat(id) {
+  const p = perangkatData.find(x => x.id === id);
+  if (!p) return;
+  p.aktif = !p.aktif;
+  renderPerangkat();
+  showToast(`${p.nama} diubah ke status: ${p.aktif ? 'Aktif' : 'Nonaktif'}`);
+}
+
+// --- Dusun Chart ---
+const dusunData = [
+  { nama:'Prambanan', jml:541 }, { nama:'Bokoharjo', jml:512 }, { nama:'Blembem', jml:510 },
+  { nama:'Karang', jml:487 }, { nama:'Senden Kulon', jml:423 }, { nama:'Senden Wetan', jml:398 }, { nama:'Kemiri', jml:376 }
+];
+const maxDusun = Math.max(...dusunData.map(d => d.jml));
+
+function renderDusunChart() {
+  document.getElementById('dusunChart').innerHTML = dusunData.map(d => `
+    <div>
+      <div class="flex justify-between text-xs text-gray-600 mb-1">
+        <span class="font-medium">${d.nama}</span>
+        <span class="font-bold text-gray-700">${d.jml.toLocaleString()}</span>
+      </div>
+      <div class="bar-container">
+        <div class="bar-fill bg-primary-500" style="width:${(d.jml/maxDusun*100).toFixed(1)}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- Modals ---
+function openPerangkatModal() { document.getElementById('perangkatModal').classList.remove('hidden'); document.getElementById('perangkatModal').classList.add('flex'); }
+function closePerangkatModal() { document.getElementById('perangkatModal').classList.add('hidden'); document.getElementById('perangkatModal').classList.remove('flex'); }
+function submitPerangkat() { closePerangkatModal(); showToast('Perangkat berhasil ditambahkan!'); }
+function openDemografiModal() { document.getElementById('demografiModal').classList.remove('hidden'); document.getElementById('demografiModal').classList.add('flex'); }
+function closeDemografiModal() { document.getElementById('demografiModal').classList.add('hidden'); document.getElementById('demografiModal').classList.remove('flex'); }
+function submitDemografi() { closeDemografiModal(); showToast('Data demografi berhasil diperbarui!'); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init
+renderMisi();
+renderPerangkat();
+renderDusunChart();
+</script>
+</body>
+</html>

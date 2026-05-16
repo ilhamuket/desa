@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Warga — Backoffice Kalurahan Bokoharjo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=General+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = { theme: { extend: { colors: {
+    primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+    earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+    accent:'#e8a838', dark:'#1a2e1a'
+  }}}}
+</script>
+<style>
+  * { font-family: 'General Sans', system-ui, sans-serif; }
+  .font-display { font-family: 'DM Serif Display', serif; }
+  #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+  @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+  #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+  #sidebarBackdrop.show { display:block; }
+  .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+  .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+  .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+  .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+  .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+  .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+  .nav-badge.red { background:#ef4444; color:#fff; }
+  .tab-btn { padding:8px 16px; border-radius:999px; font-size:13px; font-weight:500; cursor:pointer; transition:all .15s; border:1.5px solid #e5e7eb; background:#fff; color:#6b7280; }
+  .tab-btn.active { background:#15803d; color:#fff; border-color:#15803d; }
+  .tab-btn:hover:not(.active) { border-color:#86efac; color:#15803d; }
+</style>
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden">
+
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0">
+      <div class="min-w-0"><p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p><p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p></div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Layanan Surat<span class="nav-badge">5</span></a>
+    <a href="admin-pengaduan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>Pengaduan Warga<span class="nav-badge red">3</span></a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>Berita &amp; Kegiatan</a>
+    <a href="admin-galeri.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Galeri Foto</a>
+    <a href="admin-dokumen.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Dokumen &amp; APBDes</a>
+    <a href="admin-profil.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Profil Kalurahan</a>
+    <a href="admin-umkm.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>UMKM</a>
+    <a href="admin-wisata.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Wisata Desa</a>
+    <a href="admin-pertanian.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>Pertanian</a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-absensi.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Absensi Perangkat</a>
+    <a href="admin-warga.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Data Warga</a>
+    <div class="mt-2 pt-2 border-t border-white/10"><a href="index.html" target="_blank" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Portal Kalurahan</a></div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0"><p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p><p class="text-green-400/50 text-xs">Operator Kalurahan</p></div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Keluar</a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1 flex items-center gap-2">
+      <svg class="w-5 h-5 text-[#e8a838]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <h1 class="text-base font-bold text-gray-800">Data Warga</h1>
+      <span class="text-xs text-gray-400 hidden sm:inline">— Kalurahan Bokoharjo</span>
+    </div>
+    <button onclick="openModal()" class="flex items-center gap-2 bg-[#15803d] hover:bg-[#166534] text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span class="hidden sm:inline">Tambah Warga</span>
+      <span class="sm:hidden">Tambah</span>
+    </button>
+  </header>
+
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6 space-y-5">
+    <!-- STATS -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium">Total Warga</p>
+        <p id="statTotal" class="text-2xl font-bold text-gray-800 mt-1">12</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium">Kepala Keluarga</p>
+        <p id="statKK" class="text-2xl font-bold text-green-600 mt-1">5</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium">Laki-laki</p>
+        <p id="statL" class="text-2xl font-bold text-blue-600 mt-1">7</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+        <p class="text-xs text-gray-500 font-medium">Perempuan</p>
+        <p id="statP" class="text-2xl font-bold text-pink-600 mt-1">5</p>
+      </div>
+    </div>
+
+    <!-- DUSUN TABS -->
+    <div class="flex flex-wrap gap-2" id="dusunTabs">
+      <button class="tab-btn active" onclick="setTab('Semua',this)">Semua Dusun <span class="ml-1 text-[11px] opacity-75" id="badgeSemua"></span></button>
+      <button class="tab-btn" onclick="setTab('Bokoharjo Timur',this)">Dusun Bokoharjo Timur <span class="ml-1 text-[11px] opacity-75" id="badgeTimur"></span></button>
+      <button class="tab-btn" onclick="setTab('Bokoharjo Barat',this)">Dusun Bokoharjo Barat <span class="ml-1 text-[11px] opacity-75" id="badgeBarat"></span></button>
+      <button class="tab-btn" onclick="setTab('Bokoharjo Utara',this)">Dusun Bokoharjo Utara <span class="ml-1 text-[11px] opacity-75" id="badgeUtara"></span></button>
+      <button class="tab-btn" onclick="setTab('Bokoharjo Selatan',this)">Dusun Bokoharjo Selatan <span class="ml-1 text-[11px] opacity-75" id="badgeSelatan"></span></button>
+    </div>
+
+    <!-- FILTER + SEARCH -->
+    <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+      <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between flex-wrap">
+        <div class="flex flex-wrap gap-2 items-center">
+          <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="searchInput" placeholder="Cari nama/NIK…" oninput="renderTable()" class="pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400 w-52">
+          </div>
+          <select id="filterStatusKK" onchange="renderTable()" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20">
+            <option value="">Semua Status KK</option>
+            <option value="Kepala Keluarga">Kepala Keluarga</option>
+            <option value="Anggota">Anggota</option>
+          </select>
+          <select id="filterJK" onchange="renderTable()" class="px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20">
+            <option value="">Semua Jenis Kelamin</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+        </div>
+        <button onclick="exportCSV()" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#15803d] border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 border-b border-gray-100">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">No</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Nama Lengkap</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">NIK</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Dusun</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">RT/RW</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Status KK</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Jenis Kelamin</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Usia</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+      <p id="emptyState" class="hidden text-center text-gray-400 py-8 text-sm">Tidak ada data ditemukan.</p>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL TAMBAH/EDIT -->
+<div id="modalOverlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h2 id="modalTitle" class="text-base font-bold text-gray-800">Tambah Warga</h2>
+      <button onclick="closeModal()" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <form id="wargaForm" class="px-6 py-5 space-y-4" onsubmit="saveWarga(event)">
+      <input type="hidden" id="editId">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Nama Lengkap *</label><input id="fNama" type="text" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">NIK (16 digit) *</label><input id="fNIK" type="text" required maxlength="16" minlength="16" pattern="\d{16}" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tempat Lahir</label><input id="fTempatLahir" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Tanggal Lahir *</label><input id="fTglLahir" type="date" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Jenis Kelamin *</label><select id="fJK" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option value="">Pilih…</option><option>Laki-laki</option><option>Perempuan</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Agama</label><select id="fAgama" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option>Islam</option><option>Kristen</option><option>Katolik</option><option>Hindu</option><option>Buddha</option><option>Konghucu</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Status Perkawinan</label><select id="fKawin" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option>Belum Kawin</option><option>Kawin</option><option>Cerai Hidup</option><option>Cerai Mati</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Pekerjaan</label><input id="fPekerjaan" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Pendidikan Terakhir</label><select id="fPendidikan" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option>Tidak/Belum Sekolah</option><option>SD/Sederajat</option><option>SMP/Sederajat</option><option>SMA/Sederajat</option><option>D1/D2/D3</option><option>S1/D4</option><option>S2</option><option>S3</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Dusun *</label><select id="fDusun" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option value="">Pilih Dusun…</option><option>Bokoharjo Timur</option><option>Bokoharjo Barat</option><option>Bokoharjo Utara</option><option>Bokoharjo Selatan</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">RT</label><input id="fRT" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400" placeholder="001"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">RW</label><input id="fRW" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400" placeholder="001"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">No. KK</label><input id="fNoKK" type="text" maxlength="16" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Status dalam KK *</label><select id="fStatusKK" required class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"><option value="">Pilih…</option><option>Kepala Keluarga</option><option>Istri</option><option>Anak</option><option>Lainnya</option></select></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">No. HP</label><input id="fHP" type="text" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400" placeholder="08xx-xxxx-xxxx"></div>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button type="submit" class="flex-1 px-4 py-2.5 rounded-lg bg-[#15803d] hover:bg-[#166534] text-white text-sm font-semibold transition-colors">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div id="detailOverlay" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+      <h2 class="text-base font-bold text-gray-800">Detail Warga</h2>
+      <button onclick="closeDetail()" class="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="detailContent" class="px-6 py-5"></div>
+  </div>
+</div>
+
+<script>
+const dusuns = ['Bokoharjo Timur','Bokoharjo Barat','Bokoharjo Utara','Bokoharjo Selatan'];
+let wargaData = [
+  {id:1,nama:'Suharto Widodo',nik:'3404011205780001',tempatLahir:'Sleman',tglLahir:'1978-05-12',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'Petani',pendidikan:'SMA/Sederajat',dusun:'Bokoharjo Timur',rt:'001',rw:'002',noKK:'3404011205780010',statusKK:'Kepala Keluarga',hp:'081234567890'},
+  {id:2,nama:'Sri Mulyani',nik:'3404014506820002',tempatLahir:'Sleman',tglLahir:'1982-06-05',jk:'Perempuan',agama:'Islam',kawin:'Kawin',pekerjaan:'Ibu Rumah Tangga',pendidikan:'SMP/Sederajat',dusun:'Bokoharjo Timur',rt:'001',rw:'002',noKK:'3404011205780010',statusKK:'Istri',hp:'081298765432'},
+  {id:3,nama:'Ahmad Fauzi',nik:'3404012301900003',tempatLahir:'Yogyakarta',tglLahir:'1990-01-23',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'Wiraswasta',pendidikan:'S1/D4',dusun:'Bokoharjo Barat',rt:'003',rw:'001',noKK:'3404012301900020',statusKK:'Kepala Keluarga',hp:'085712345678'},
+  {id:4,nama:'Dewi Ratnasari',nik:'3404015607850004',tempatLahir:'Klaten',tglLahir:'1985-07-16',jk:'Perempuan',agama:'Islam',kawin:'Kawin',pekerjaan:'Pedagang',pendidikan:'SMA/Sederajat',dusun:'Bokoharjo Barat',rt:'003',rw:'001',noKK:'3404012301900020',statusKK:'Istri',hp:'087865432109'},
+  {id:5,nama:'Bambang Sutrisno',nik:'3404011508750005',tempatLahir:'Sleman',tglLahir:'1975-08-15',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'PNS',pendidikan:'S1/D4',dusun:'Bokoharjo Utara',rt:'002',rw:'003',noKK:'3404011508750030',statusKK:'Kepala Keluarga',hp:'081345678901'},
+  {id:6,nama:'Rina Wulandari',nik:'3404012012950006',tempatLahir:'Bantul',tglLahir:'1995-12-20',jk:'Perempuan',agama:'Islam',kawin:'Belum Kawin',pekerjaan:'Karyawan Swasta',pendidikan:'S1/D4',dusun:'Bokoharjo Utara',rt:'002',rw:'003',noKK:'3404011508750030',statusKK:'Anak',hp:'089876543210'},
+  {id:7,nama:'Joko Prasetyo',nik:'3404010304880007',tempatLahir:'Sleman',tglLahir:'1988-04-03',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'Buruh',pendidikan:'SMP/Sederajat',dusun:'Bokoharjo Selatan',rt:'001',rw:'004',noKK:'3404010304880040',statusKK:'Kepala Keluarga',hp:'082198765432'},
+  {id:8,nama:'Siti Aminah',nik:'3404017809920008',tempatLahir:'Sleman',tglLahir:'1992-09-18',jk:'Perempuan',agama:'Islam',kawin:'Kawin',pekerjaan:'Guru',pendidikan:'S1/D4',dusun:'Bokoharjo Selatan',rt:'001',rw:'004',noKK:'3404010304880040',statusKK:'Istri',hp:'085643218765'},
+  {id:9,nama:'Wahyu Nugroho',nik:'3404011106700009',tempatLahir:'Yogyakarta',tglLahir:'1970-06-11',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'Pensiunan',pendidikan:'SMA/Sederajat',dusun:'Bokoharjo Timur',rt:'002',rw:'001',noKK:'3404011106700050',statusKK:'Kepala Keluarga',hp:'081567890123'},
+  {id:10,nama:'Endang Supriyati',nik:'3404012503680010',tempatLahir:'Sleman',tglLahir:'1968-03-25',jk:'Perempuan',agama:'Islam',kawin:'Kawin',pekerjaan:'Ibu Rumah Tangga',pendidikan:'SD/Sederajat',dusun:'Bokoharjo Barat',rt:'002',rw:'002',noKK:'3404012503680060',statusKK:'Istri',hp:'087812345678'},
+  {id:11,nama:'Rizky Ramadhan',nik:'3404011701030011',tempatLahir:'Sleman',tglLahir:'2003-01-17',jk:'Laki-laki',agama:'Islam',kawin:'Belum Kawin',pekerjaan:'Mahasiswa',pendidikan:'SMA/Sederajat',dusun:'Bokoharjo Utara',rt:'001',rw:'002',noKK:'3404011508750030',statusKK:'Anak',hp:'089912345678'},
+  {id:12,nama:'Puji Lestari',nik:'3404010908800012',tempatLahir:'Klaten',tglLahir:'1980-08-09',jk:'Laki-laki',agama:'Islam',kawin:'Kawin',pekerjaan:'Petani',pendidikan:'SMP/Sederajat',dusun:'Bokoharjo Selatan',rt:'003',rw:'001',noKK:'3404010908800070',statusKK:'Kepala Keluarga',hp:'081876543210'}
+];
+let nextId=13, activeTab='Semua';
+
+function calcUsia(tgl){const b=new Date(tgl),t=new Date();let a=t.getFullYear()-b.getFullYear();if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))a--;return a;}
+
+function getFiltered(){
+  let data=wargaData;
+  if(activeTab!=='Semua') data=data.filter(w=>w.dusun===activeTab);
+  const s=document.getElementById('searchInput').value.toLowerCase();
+  if(s) data=data.filter(w=>w.nama.toLowerCase().includes(s)||w.nik.includes(s));
+  const fkk=document.getElementById('filterStatusKK').value;
+  if(fkk){
+    if(fkk==='Kepala Keluarga') data=data.filter(w=>w.statusKK==='Kepala Keluarga');
+    else data=data.filter(w=>w.statusKK!=='Kepala Keluarga');
+  }
+  const fjk=document.getElementById('filterJK').value;
+  if(fjk) data=data.filter(w=>w.jk===fjk);
+  return data;
+}
+
+function updateStats(){
+  document.getElementById('statTotal').textContent=wargaData.length;
+  document.getElementById('statKK').textContent=wargaData.filter(w=>w.statusKK==='Kepala Keluarga').length;
+  document.getElementById('statL').textContent=wargaData.filter(w=>w.jk==='Laki-laki').length;
+  document.getElementById('statP').textContent=wargaData.filter(w=>w.jk==='Perempuan').length;
+  document.getElementById('badgeSemua').textContent='('+wargaData.length+')';
+  document.getElementById('badgeTimur').textContent='('+wargaData.filter(w=>w.dusun==='Bokoharjo Timur').length+')';
+  document.getElementById('badgeBarat').textContent='('+wargaData.filter(w=>w.dusun==='Bokoharjo Barat').length+')';
+  document.getElementById('badgeUtara').textContent='('+wargaData.filter(w=>w.dusun==='Bokoharjo Utara').length+')';
+  document.getElementById('badgeSelatan').textContent='('+wargaData.filter(w=>w.dusun==='Bokoharjo Selatan').length+')';
+}
+
+function renderTable(){
+  const data=getFiltered();
+  const tbody=document.getElementById('tableBody');
+  const empty=document.getElementById('emptyState');
+  if(!data.length){tbody.innerHTML='';empty.classList.remove('hidden');return;}
+  empty.classList.add('hidden');
+  tbody.innerHTML=data.map((w,i)=>`<tr class="border-b border-gray-50 hover:bg-gray-50/50">
+    <td class="px-4 py-3 text-gray-500">${i+1}</td>
+    <td class="px-4 py-3 font-medium text-gray-800">${w.nama}</td>
+    <td class="px-4 py-3 text-gray-600 font-mono text-xs">${w.nik}</td>
+    <td class="px-4 py-3 text-gray-600">${w.dusun}</td>
+    <td class="px-4 py-3 text-gray-600">${w.rt}/${w.rw}</td>
+    <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[11px] font-semibold ${w.statusKK==='Kepala Keluarga'?'bg-green-100 text-green-700':'bg-gray-100 text-gray-600'}">${w.statusKK}</span></td>
+    <td class="px-4 py-3 text-gray-600">${w.jk}</td>
+    <td class="px-4 py-3 text-gray-600">${calcUsia(w.tglLahir)} th</td>
+    <td class="px-4 py-3"><div class="flex gap-1">
+      <button onclick="editWarga(${w.id})" class="px-2 py-1 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded">Edit</button>
+      <button onclick="hapusWarga(${w.id})" class="px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-50 rounded">Hapus</button>
+      <button onclick="showDetail(${w.id})" class="px-2 py-1 text-xs font-semibold text-[#15803d] hover:bg-green-50 rounded">Detail</button>
+    </div></td>
+  </tr>`).join('');
+}
+
+function setTab(tab,btn){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTable();
+}
+
+function openModal(data=null){
+  document.getElementById('modalTitle').textContent=data?'Edit Warga':'Tambah Warga';
+  document.getElementById('editId').value=data?data.id:'';
+  document.getElementById('fNama').value=data?data.nama:'';
+  document.getElementById('fNIK').value=data?data.nik:'';
+  document.getElementById('fTempatLahir').value=data?data.tempatLahir:'';
+  document.getElementById('fTglLahir').value=data?data.tglLahir:'';
+  document.getElementById('fJK').value=data?data.jk:'';
+  document.getElementById('fAgama').value=data?data.agama:'Islam';
+  document.getElementById('fKawin').value=data?data.kawin:'Belum Kawin';
+  document.getElementById('fPekerjaan').value=data?data.pekerjaan:'';
+  document.getElementById('fPendidikan').value=data?data.pendidikan:'Tidak/Belum Sekolah';
+  document.getElementById('fDusun').value=data?data.dusun:'';
+  document.getElementById('fRT').value=data?data.rt:'';
+  document.getElementById('fRW').value=data?data.rw:'';
+  document.getElementById('fNoKK').value=data?data.noKK:'';
+  document.getElementById('fStatusKK').value=data?data.statusKK:'';
+  document.getElementById('fHP').value=data?data.hp:'';
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.add('hidden');}
+
+function editWarga(id){const w=wargaData.find(x=>x.id===id);if(w)openModal(w);}
+
+function saveWarga(e){
+  e.preventDefault();
+  const id=document.getElementById('editId').value;
+  const obj={nama:document.getElementById('fNama').value.trim(),nik:document.getElementById('fNIK').value.trim(),tempatLahir:document.getElementById('fTempatLahir').value.trim(),tglLahir:document.getElementById('fTglLahir').value,jk:document.getElementById('fJK').value,agama:document.getElementById('fAgama').value,kawin:document.getElementById('fKawin').value,pekerjaan:document.getElementById('fPekerjaan').value.trim(),pendidikan:document.getElementById('fPendidikan').value,dusun:document.getElementById('fDusun').value,rt:document.getElementById('fRT').value.trim(),rw:document.getElementById('fRW').value.trim(),noKK:document.getElementById('fNoKK').value.trim(),statusKK:document.getElementById('fStatusKK').value,hp:document.getElementById('fHP').value.trim()};
+  if(id){const idx=wargaData.findIndex(x=>x.id==id);if(idx>=0)wargaData[idx]={...wargaData[idx],...obj};}
+  else wargaData.unshift({id:nextId++,...obj});
+  closeModal();updateStats();renderTable();
+}
+
+function hapusWarga(id){if(!confirm('Hapus data warga ini?'))return;wargaData=wargaData.filter(x=>x.id!==id);updateStats();renderTable();}
+
+function showDetail(id){
+  const w=wargaData.find(x=>x.id===id);if(!w)return;
+  const usia=calcUsia(w.tglLahir);
+  document.getElementById('detailContent').innerHTML=`
+    <div class="text-center mb-4">
+      <div class="w-16 h-16 rounded-full bg-[#15803d] flex items-center justify-center text-white text-xl font-bold mx-auto">${w.nama.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase()}</div>
+      <h3 class="text-lg font-bold text-gray-800 mt-2">${w.nama}</h3>
+      <p class="text-sm text-gray-500">NIK: ${w.nik}</p>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-gray-400 text-xs">Tempat/Tgl Lahir</span><p class="font-medium text-gray-700">${w.tempatLahir}, ${new Date(w.tglLahir).toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}</p></div>
+      <div><span class="text-gray-400 text-xs">Usia</span><p class="font-medium text-gray-700">${usia} tahun</p></div>
+      <div><span class="text-gray-400 text-xs">Jenis Kelamin</span><p class="font-medium text-gray-700">${w.jk}</p></div>
+      <div><span class="text-gray-400 text-xs">Agama</span><p class="font-medium text-gray-700">${w.agama}</p></div>
+      <div><span class="text-gray-400 text-xs">Status Perkawinan</span><p class="font-medium text-gray-700">${w.kawin}</p></div>
+      <div><span class="text-gray-400 text-xs">Pekerjaan</span><p class="font-medium text-gray-700">${w.pekerjaan}</p></div>
+      <div><span class="text-gray-400 text-xs">Pendidikan</span><p class="font-medium text-gray-700">${w.pendidikan}</p></div>
+      <div><span class="text-gray-400 text-xs">Dusun</span><p class="font-medium text-gray-700">${w.dusun}</p></div>
+      <div><span class="text-gray-400 text-xs">RT/RW</span><p class="font-medium text-gray-700">${w.rt}/${w.rw}</p></div>
+      <div><span class="text-gray-400 text-xs">No. KK</span><p class="font-medium text-gray-700">${w.noKK}</p></div>
+      <div><span class="text-gray-400 text-xs">Status dalam KK</span><p class="font-medium text-gray-700">${w.statusKK}</p></div>
+      <div><span class="text-gray-400 text-xs">No. HP</span><p class="font-medium text-gray-700">${w.hp||'-'}</p></div>
+    </div>`;
+  document.getElementById('detailOverlay').classList.remove('hidden');
+}
+function closeDetail(){document.getElementById('detailOverlay').classList.add('hidden');}
+
+function exportCSV(){
+  const data=getFiltered();
+  const headers=['No','Nama Lengkap','NIK','Dusun','RT','RW','Status KK','Jenis Kelamin','Usia','Tempat Lahir','Tanggal Lahir','Agama','Status Perkawinan','Pekerjaan','Pendidikan','No KK','No HP'];
+  const rows=data.map((w,i)=>[i+1,w.nama,w.nik,w.dusun,w.rt,w.rw,w.statusKK,w.jk,calcUsia(w.tglLahir),w.tempatLahir,w.tglLahir,w.agama,w.kawin,w.pekerjaan,w.pendidikan,w.noKK,w.hp]);
+  let csv=headers.join(',')+'\n'+rows.map(r=>r.map(c=>'"'+(c||'')+'"').join(',')).join('\n');
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='data_warga.csv';a.click();
+}
+
+document.getElementById('modalOverlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.getElementById('detailOverlay').addEventListener('click',function(e){if(e.target===this)closeDetail();});
+
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarBackdrop').classList.add('show');document.body.style.overflow='hidden';}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarBackdrop').classList.remove('show');document.body.style.overflow='';}
+
+updateStats();renderTable();
+</script>
+</body>
+</html>

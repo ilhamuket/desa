@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peta Padukuhan Bokoharjo</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; }
+#map { width: 100vw; height: 100vh; }
+.leaflet-popup-content-wrapper { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.popup-inner { font-family: system-ui, sans-serif; min-width: 180px; }
+.popup-inner h3 { font-size: 14px; font-weight: 700; margin: 0 0 4px; }
+.popup-inner p { font-size: 12px; color: #6b7280; margin: 0; }
+.legend {
+  position: absolute; bottom: 30px; right: 10px; z-index: 1000;
+  background: white; border-radius: 12px; padding: 12px 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15); max-width: 200px;
+  max-height: 80vh; overflow-y: auto;
+}
+.legend h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #374151; margin-bottom: 8px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 12px; color: #374151; }
+.legend-dot { width: 14px; height: 14px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+var map = L.map('map', { center: [-7.7680, 110.4830], zoom: 14, scrollWheelZoom: true });
+
+L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+  maxZoom: 20, subdomains: ['mt0','mt1','mt2','mt3'],
+  attribution: '&copy; Google Maps'
+}).addTo(map);
+
+// 13 Padukuhan Bokoharjo - polygons traced from OSM data & verified landmarks
+// Village boundary: Lat -7.7398 to -7.7894, Lon 110.4691 to 110.4960
+// Key refs: Prambanan(-7.7522,110.4915), Ratu Boko(-7.7705,110.4895),
+// Banyunibo(-7.7780,110.4940), Opak River(west ~110.469-110.478)
+// Jl Piyungan-Prambanan runs N-S ~110.488, Jl Jogja-Solo E-W ~-7.752
+
+var padukuhan = [
+  {
+    name: "KRANGGAN",
+    color: "#E63946",
+    info: "Lokasi Candi Prambanan & Jl. Jogja-Solo",
+    coords: [
+      [-7.7398, 110.4860], [-7.7398, 110.4960],
+      [-7.7450, 110.4960], [-7.7500, 110.4960],
+      [-7.7540, 110.4960], [-7.7560, 110.4940],
+      [-7.7560, 110.4900], [-7.7545, 110.4870],
+      [-7.7520, 110.4850], [-7.7480, 110.4840],
+      [-7.7440, 110.4845], [-7.7398, 110.4860]
+    ]
+  },
+  {
+    name: "KLURAK BARU",
+    color: "#457B9D",
+    info: "Dekat rel kereta api & Jl. Piyungan-Prambanan",
+    coords: [
+      [-7.7560, 110.4900], [-7.7560, 110.4940],
+      [-7.7540, 110.4960], [-7.7580, 110.4960],
+      [-7.7620, 110.4960], [-7.7625, 110.4920],
+      [-7.7620, 110.4890], [-7.7600, 110.4875],
+      [-7.7580, 110.4870], [-7.7560, 110.4900]
+    ]
+  },
+  {
+    name: "RINGINSARI",
+    color: "#2A9D8F",
+    info: "Di sepanjang Jl. Piyungan-Prambanan",
+    coords: [
+      [-7.7545, 110.4810], [-7.7545, 110.4870],
+      [-7.7560, 110.4900], [-7.7580, 110.4870],
+      [-7.7600, 110.4875], [-7.7620, 110.4890],
+      [-7.7660, 110.4890], [-7.7670, 110.4860],
+      [-7.7660, 110.4820], [-7.7630, 110.4790],
+      [-7.7600, 110.4780], [-7.7570, 110.4790],
+      [-7.7545, 110.4810]
+    ]
+  },
+  {
+    name: "GATAK",
+    color: "#E9C46A",
+    info: "Lokasi Keraton Ratu Boko (dataran tinggi)",
+    coords: [
+      [-7.7625, 110.4920], [-7.7620, 110.4960],
+      [-7.7660, 110.4960], [-7.7720, 110.4960],
+      [-7.7740, 110.4940], [-7.7740, 110.4900],
+      [-7.7720, 110.4880], [-7.7700, 110.4870],
+      [-7.7670, 110.4860], [-7.7660, 110.4890],
+      [-7.7625, 110.4920]
+    ]
+  },
+  {
+    name: "DAWUNG",
+    color: "#F4A261",
+    info: "Bagian kompleks Ratu Boko (barat)",
+    coords: [
+      [-7.7660, 110.4820], [-7.7670, 110.4860],
+      [-7.7700, 110.4870], [-7.7720, 110.4880],
+      [-7.7740, 110.4870], [-7.7750, 110.4840],
+      [-7.7740, 110.4800], [-7.7720, 110.4780],
+      [-7.7700, 110.4770], [-7.7680, 110.4780],
+      [-7.7660, 110.4820]
+    ]
+  },
+  {
+    name: "PELEMSARI",
+    color: "#264653",
+    info: "Dekat Sungai Opak (barat)",
+    coords: [
+      [-7.7630, 110.4691], [-7.7630, 110.4740],
+      [-7.7640, 110.4770], [-7.7660, 110.4790],
+      [-7.7680, 110.4780], [-7.7700, 110.4770],
+      [-7.7720, 110.4780], [-7.7740, 110.4770],
+      [-7.7760, 110.4750], [-7.7770, 110.4720],
+      [-7.7770, 110.4691], [-7.7630, 110.4691]
+    ]
+  },
+  {
+    name: "JOBOHAN",
+    color: "#6A4C93",
+    info: "Area TPU Jobohan",
+    coords: [
+      [-7.7740, 110.4770], [-7.7740, 110.4800],
+      [-7.7750, 110.4840], [-7.7740, 110.4870],
+      [-7.7760, 110.4870], [-7.7790, 110.4850],
+      [-7.7800, 110.4820], [-7.7800, 110.4790],
+      [-7.7790, 110.4760], [-7.7770, 110.4750],
+      [-7.7760, 110.4750], [-7.7740, 110.4770]
+    ]
+  },
+  {
+    name: "MARANGAN",
+    color: "#B5838D",
+    info: "Antara Jobohan dan Jamusan",
+    coords: [
+      [-7.7770, 110.4691], [-7.7770, 110.4720],
+      [-7.7770, 110.4750], [-7.7790, 110.4760],
+      [-7.7800, 110.4790], [-7.7820, 110.4780],
+      [-7.7840, 110.4760], [-7.7850, 110.4730],
+      [-7.7850, 110.4691], [-7.7770, 110.4691]
+    ]
+  },
+  {
+    name: "JAMUSAN",
+    color: "#606C38",
+    info: "Barat daya, dekat Sungai Opak",
+    coords: [
+      [-7.7850, 110.4691], [-7.7850, 110.4730],
+      [-7.7840, 110.4760], [-7.7850, 110.4780],
+      [-7.7870, 110.4790], [-7.7894, 110.4780],
+      [-7.7894, 110.4691], [-7.7850, 110.4691]
+    ]
+  },
+  {
+    name: "CEPIT",
+    color: "#E76F51",
+    info: "Lokasi Candi Banyunibo",
+    coords: [
+      [-7.7720, 110.4960], [-7.7740, 110.4940],
+      [-7.7740, 110.4900], [-7.7760, 110.4870],
+      [-7.7790, 110.4850], [-7.7800, 110.4880],
+      [-7.7800, 110.4920], [-7.7810, 110.4960],
+      [-7.7720, 110.4960]
+    ]
+  },
+  {
+    name: "JIRAK",
+    color: "#BC6C25",
+    info: "Selatan-tengah desa",
+    coords: [
+      [-7.7800, 110.4820], [-7.7790, 110.4850],
+      [-7.7800, 110.4880], [-7.7800, 110.4920],
+      [-7.7830, 110.4920], [-7.7860, 110.4900],
+      [-7.7870, 110.4860], [-7.7860, 110.4820],
+      [-7.7840, 110.4800], [-7.7820, 110.4780],
+      [-7.7800, 110.4790], [-7.7800, 110.4820]
+    ]
+  },
+  {
+    name: "MAJASEM",
+    color: "#9B2226",
+    info: "Tenggara desa, dekat Jembatan Majasem",
+    coords: [
+      [-7.7810, 110.4960], [-7.7830, 110.4920],
+      [-7.7860, 110.4900], [-7.7894, 110.4910],
+      [-7.7894, 110.4960], [-7.7810, 110.4960]
+    ]
+  },
+  {
+    name: "PULEREJO",
+    color: "#3A5A40",
+    info: "Selatan desa",
+    coords: [
+      [-7.7820, 110.4780], [-7.7840, 110.4800],
+      [-7.7860, 110.4820], [-7.7870, 110.4860],
+      [-7.7860, 110.4900], [-7.7894, 110.4910],
+      [-7.7894, 110.4780], [-7.7870, 110.4790],
+      [-7.7850, 110.4780], [-7.7820, 110.4780]
+    ]
+  }
+];
+
+padukuhan.forEach(function(p) {
+  var polygon = L.polygon(p.coords, {
+    fillColor: p.color, fillOpacity: 0.55,
+    color: '#ffffff', weight: 2.5, dashArray: '6, 4'
+  }).addTo(map);
+
+  var center = polygon.getBounds().getCenter();
+  L.marker(center, {
+    icon: L.divIcon({
+      className: '',
+      html: '<div style="font-family:system-ui,sans-serif;font-weight:700;font-size:11px;color:#000;text-shadow:0 1px 3px rgba(255,255,255,0.95),0 -1px 3px rgba(255,255,255,0.95),1px 0 3px rgba(255,255,255,0.95),-1px 0 3px rgba(255,255,255,0.95);white-space:nowrap;text-align:center;">' + p.name + '</div>',
+      iconSize: [100, 20], iconAnchor: [50, 10]
+    }),
+    interactive: false
+  }).addTo(map);
+
+  polygon.on('mouseover', function(e) { e.target.setStyle({ fillOpacity: 0.8, weight: 3 }); });
+  polygon.on('mouseout', function(e) { e.target.setStyle({ fillOpacity: 0.55, weight: 2.5 }); });
+  polygon.on('click', function() { map.fitBounds(polygon.getBounds(), { padding: [60, 60] }); });
+
+  polygon.bindPopup(
+    '<div class="popup-inner"><h3 style="color:' + p.color + '">Padukuhan ' + p.name + '</h3>' +
+    '<p>' + p.info + '</p>' +
+    '<p>Kalurahan Bokoharjo, Kec. Prambanan, Kab. Sleman</p></div>',
+    { closeButton: false }
+  );
+});
+
+// Legend
+var legend = L.control({ position: 'bottomright' });
+legend.onAdd = function() {
+  var div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = '<h4>13 Padukuhan Bokoharjo</h4>';
+  padukuhan.forEach(function(p) {
+    div.innerHTML += '<div class="legend-item"><div class="legend-dot" style="background:' + p.color + '"></div>' + p.name + '</div>';
+  });
+  return div;
+};
+legend.addTo(map);
+
+// Landmark markers
+var landmarks = [
+  { pos: [-7.7522, 110.4915], name: "Candi Prambanan", icon: "🛕" },
+  { pos: [-7.7705, 110.4895], name: "Keraton Ratu Boko", icon: "🏛" },
+  { pos: [-7.7780, 110.4940], name: "Candi Banyunibo", icon: "🛕" }
+];
+landmarks.forEach(function(lm) {
+  L.marker(lm.pos, {
+    icon: L.divIcon({
+      className: '',
+      html: '<div style="font-size:20px;text-shadow:0 2px 4px rgba(0,0,0,0.4);">' + lm.icon + '</div>',
+      iconSize: [24, 24], iconAnchor: [12, 12]
+    })
+  }).bindPopup('<div class="popup-inner"><h3>' + lm.icon + ' ' + lm.name + '</h3><p>Kalurahan Bokoharjo</p></div>')
+    .addTo(map);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Absensi Perangkat — Kalurahan Bokoharjo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: { colors: {
+    primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+    accent:'#e8a838'
+  }}}}
+</script>
+<style>
+  body { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .outer-wrap {
+    background: linear-gradient(160deg, #052e16 0%, #0d3320 40%, #14532d 100%);
+    min-height: 100vh;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* PIN dot indicator */
+  .pin-dot { width:14px; height:14px; border-radius:50%; border:2px solid #15803d; background:transparent; transition:background 0.15s; }
+  .pin-dot.filled { background:#15803d; }
+
+  /* Animated checkmark */
+  .checkmark-circle { stroke-dasharray: 166; stroke-dashoffset: 166; animation: stroke 0.6s cubic-bezier(0.65,0,0.45,1) forwards; }
+  .checkmark-check { stroke-dasharray: 48; stroke-dashoffset: 48; animation: stroke 0.3s cubic-bezier(0.65,0,0.45,1) 0.6s forwards; }
+  @keyframes stroke { to { stroke-dashoffset: 0; } }
+
+  /* Spinner */
+  .spinner { border:4px solid #bbf7d0; border-top-color:#15803d; border-radius:50%; width:56px; height:56px; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Pulse for location icon */
+  @keyframes pulse-loc { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.85} }
+  .pulse-loc { animation: pulse-loc 1.8s ease-in-out infinite; }
+
+  /* Table scrollbar */
+  .table-wrap { max-height: 320px; overflow-y: auto; }
+  .table-wrap::-webkit-scrollbar { width:4px; }
+  .table-wrap::-webkit-scrollbar-track { background:#f0fdf4; }
+  .table-wrap::-webkit-scrollbar-thumb { background:#86efac; border-radius:2px; }
+</style>
+</head>
+<body class="outer-wrap">
+
+<!-- Top nav -->
+<div class="max-w-sm mx-auto px-4 pt-3 pb-1 flex justify-between items-center">
+  <a href="index.html" class="text-primary-300 text-xs hover:text-white transition-colors">← Portal</a>
+  <a href="admin-absensi.html" class="text-primary-300 text-xs hover:text-white transition-colors">Rekap Admin →</a>
+</div>
+
+<!-- ===================== MAIN CARD ===================== -->
+<div class="max-w-sm w-full mx-auto px-4 pb-4">
+
+  <!-- ====== STATE: LOGIN ====== -->
+  <div id="state-login" class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+    <!-- Card header -->
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-6 pb-5 text-center">
+      <div class="flex justify-center mb-3">
+        <img src="assets/logo.jpg" alt="Logo Kalurahan Bokoharjo" class="w-16 h-16 rounded-full object-cover border-2 border-primary-300 shadow-lg" onerror="this.style.display='none';document.getElementById('logo-fallback-login').style.display='flex'">
+        <div id="logo-fallback-login" class="w-16 h-16 rounded-full bg-primary-600 border-2 border-primary-300 shadow-lg items-center justify-center hidden">
+          <span class="text-white font-bold text-xl">KB</span>
+        </div>
+      </div>
+      <h1 class="text-white font-bold text-lg leading-tight">Absensi Perangkat</h1>
+      <p class="text-primary-200 text-xs mt-0.5">Kalurahan Bokoharjo</p>
+      <p id="login-date" class="text-primary-300 text-xs mt-1"></p>
+    </div>
+
+    <!-- Clock -->
+    <div class="text-center py-4 border-b border-gray-100">
+      <span id="login-clock" class="font-mono text-3xl font-bold text-primary-700"></span>
+    </div>
+
+    <!-- Form -->
+    <div class="px-6 py-5 space-y-4">
+      <!-- Dropdown -->
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">Pilih Nama</label>
+        <select id="login-select" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent appearance-none">
+          <option value="">— Pilih Perangkat —</option>
+        </select>
+      </div>
+
+      <!-- PIN -->
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 mb-1.5">PIN</label>
+        <!-- Dot indicators -->
+        <div class="flex justify-center gap-4 mb-3">
+          <div class="pin-dot" id="dot-0"></div>
+          <div class="pin-dot" id="dot-1"></div>
+          <div class="pin-dot" id="dot-2"></div>
+          <div class="pin-dot" id="dot-3"></div>
+        </div>
+        <input id="login-pin" type="password" inputmode="numeric" maxlength="4" placeholder="Masukkan 4 digit PIN"
+          class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-center tracking-widest text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent">
+      </div>
+
+      <!-- Error msg -->
+      <p id="login-error" class="text-red-500 text-xs text-center hidden">Nama atau PIN tidak sesuai.</p>
+
+      <!-- Submit -->
+      <button id="btn-login" onclick="doLogin()"
+        class="w-full bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold py-3 rounded-xl transition-colors shadow-md">
+        Masuk
+      </button>
+
+      <p class="text-center text-xs text-gray-400">PIN default: <span class="font-mono font-semibold text-gray-500">1234</span></p>
+    </div>
+  </div>
+
+  <!-- ====== STATE: HOME ====== -->
+  <div id="state-home" class="bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+
+    <!-- Avatar header -->
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-5 pb-4">
+      <div class="flex items-center gap-3">
+        <div id="home-avatar" class="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-lg flex-shrink-0"
+          style="background:linear-gradient(135deg,#22c55e,#15803d)"></div>
+        <div class="flex-1 min-w-0">
+          <p id="home-nama" class="text-white font-semibold text-sm leading-tight truncate"></p>
+          <p id="home-jabatan" class="text-primary-200 text-xs leading-tight truncate"></p>
+        </div>
+        <button onclick="doLogout()" class="text-primary-300 hover:text-white text-xs border border-primary-500 hover:border-white px-2 py-1 rounded-lg transition-colors flex-shrink-0">
+          Logout
+        </button>
+      </div>
+
+      <!-- Tanggal -->
+      <p id="home-date" class="text-primary-300 text-xs mt-3 text-center"></p>
+
+      <!-- Clock -->
+      <div class="text-center mt-1">
+        <span id="home-clock" class="font-mono text-3xl font-bold text-white"></span>
+      </div>
+    </div>
+
+    <!-- Status hari ini -->
+    <div class="px-5 pt-4">
+      <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Status Hari Ini</p>
+      <div id="home-status-panel"></div>
+    </div>
+
+    <!-- Tombol aksi -->
+    <div class="px-5 pt-3 pb-5 space-y-2">
+      <button id="btn-clockaction" onclick="startAbsensi()"
+        class="w-full font-bold py-4 rounded-xl text-white text-lg shadow-lg transition-all active:scale-95">
+      </button>
+      <div class="flex gap-2 mt-1">
+        <button onclick="doLogout()" class="flex-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 py-2 rounded-xl transition-colors">
+          Logout
+        </button>
+        <a href="admin-absensi.html" class="flex-1 text-xs text-primary-600 hover:text-primary-700 border border-primary-200 hover:border-primary-300 py-2 rounded-xl transition-colors text-center">
+          Lihat Rekap
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STATE: SELFIE ====== -->
+  <div id="state-selfie" class="bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-5 pb-4 text-center">
+      <h2 class="text-white font-bold text-base">Ambil Foto Selfie</h2>
+      <p class="text-primary-200 text-xs mt-0.5">Pastikan wajah terlihat jelas</p>
+    </div>
+
+    <div class="px-4 pt-4 pb-5">
+      <!-- Camera viewfinder -->
+      <div id="camera-container" class="relative">
+        <video id="cameraFeed" autoplay playsinline muted
+          class="w-full rounded-xl bg-black"
+          style="aspect-ratio:3/4;object-fit:cover;display:block;"></video>
+        <!-- Overlay guide -->
+        <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+          <div class="w-40 h-52 border-2 border-white/50 rounded-full opacity-60"></div>
+        </div>
+      </div>
+
+      <!-- Camera fallback -->
+      <div id="camera-fallback" class="hidden rounded-xl bg-gray-100 flex flex-col items-center justify-center gap-3 p-8" style="aspect-ratio:3/4;">
+        <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <p id="camera-fallback-msg" class="text-gray-500 text-sm text-center"></p>
+        <button onclick="skipCamera()" class="bg-primary-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-700 transition-colors">
+          Lanjut tanpa Foto (Demo)
+        </button>
+      </div>
+
+      <!-- Capture button -->
+      <div id="camera-btn-row" class="flex items-center justify-center gap-6 mt-4">
+        <button onclick="cancelSelfie()" class="text-gray-400 hover:text-gray-600 text-sm transition-colors">Batal</button>
+        <button onclick="capturePhoto()"
+          class="w-16 h-16 rounded-full bg-white border-4 border-primary-500 shadow-xl flex items-center justify-center hover:bg-primary-50 active:scale-95 transition-all">
+          <svg class="w-7 h-7 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </button>
+        <div class="w-12"></div><!-- spacer -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STATE: LOKASI ====== -->
+  <div id="state-lokasi" class="bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-5 pb-4 text-center">
+      <h2 class="text-white font-bold text-base">Verifikasi Lokasi</h2>
+      <p class="text-primary-200 text-xs mt-0.5">Sistem mendeteksi lokasi Anda saat ini</p>
+    </div>
+
+    <div class="px-6 py-8">
+      <!-- Loading -->
+      <div id="loc-loading" class="flex flex-col items-center gap-4">
+        <div class="spinner"></div>
+        <p class="text-gray-500 text-sm">Mendeteksi lokasi GPS...</p>
+      </div>
+
+      <!-- Result -->
+      <div id="loc-result" class="hidden flex-col items-center gap-3 text-center">
+        <div class="pulse-loc">
+          <svg class="w-14 h-14 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p id="loc-short-addr" class="text-gray-800 font-semibold text-sm leading-snug"></p>
+          <p id="loc-coords" class="text-gray-400 text-xs mt-0.5"></p>
+        </div>
+        <div id="loc-accuracy" class="text-gray-400 text-xs"></div>
+        <div id="loc-distance-badge"></div>
+      </div>
+
+      <!-- Error fallback -->
+      <div id="loc-error" class="hidden flex-col items-center gap-3 text-center">
+        <svg class="w-12 h-12 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <p id="loc-error-msg" class="text-gray-600 text-sm"></p>
+      </div>
+
+      <!-- Actions -->
+      <div class="mt-6 space-y-2">
+        <button id="btn-confirm-loc" onclick="goToKonfirmasi()" disabled
+          class="w-full bg-primary-600 hover:bg-primary-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold py-3 rounded-xl transition-colors shadow-md disabled:shadow-none">
+          Konfirmasi Lokasi
+        </button>
+        <button onclick="skipLokasi()" class="w-full text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 py-2.5 text-sm rounded-xl transition-colors">
+          Skip Lokasi (Demo)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STATE: KONFIRMASI ====== -->
+  <div id="state-konfirmasi" class="bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-5 pb-4 text-center">
+      <h2 class="text-white font-bold text-base">Konfirmasi Absensi</h2>
+    </div>
+
+    <div class="px-6 py-5">
+      <!-- Selfie preview -->
+      <div class="flex justify-center mb-4">
+        <div class="relative">
+          <img id="konfirmasi-selfie" src="" alt="Selfie"
+            class="w-24 h-24 object-cover rounded-full border-4 border-primary-500 shadow-lg hidden">
+          <div id="konfirmasi-selfie-placeholder"
+            class="w-24 h-24 rounded-full border-4 border-primary-300 shadow-lg flex items-center justify-center bg-gray-100">
+            <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="text-center mb-4">
+        <p id="konfirmasi-nama" class="font-bold text-gray-800 text-base"></p>
+        <p id="konfirmasi-jabatan" class="text-gray-500 text-sm"></p>
+      </div>
+
+      <!-- Type badge -->
+      <div class="flex justify-center mb-4">
+        <span id="konfirmasi-type-badge" class="px-6 py-1.5 rounded-full font-bold text-sm tracking-wide"></span>
+      </div>
+
+      <!-- Detail rows -->
+      <div class="bg-gray-50 rounded-xl p-4 space-y-2.5 mb-5">
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <div>
+            <p class="text-xs text-gray-400 leading-none">Waktu</p>
+            <p id="konfirmasi-time" class="font-mono font-semibold text-gray-800 text-sm mt-0.5"></p>
+          </div>
+        </div>
+        <div class="flex items-start gap-2">
+          <svg class="w-4 h-4 text-primary-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
+          <div>
+            <p class="text-xs text-gray-400 leading-none">Lokasi</p>
+            <p id="konfirmasi-lokasi" class="font-semibold text-gray-800 text-sm mt-0.5"></p>
+            <p id="konfirmasi-coords" class="text-gray-400 text-xs"></p>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="simpanAbsensi()"
+        class="w-full bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-bold py-3.5 rounded-xl transition-colors shadow-md text-base mb-2">
+        ✓ Konfirmasi &amp; Simpan
+      </button>
+      <button onclick="goBackToSelfie()"
+        class="w-full border-2 border-primary-300 hover:border-primary-500 text-primary-600 hover:text-primary-700 font-semibold py-2.5 rounded-xl transition-colors text-sm">
+        Ulangi Foto
+      </button>
+    </div>
+  </div>
+
+  <!-- ====== STATE: SELESAI ====== -->
+  <div id="state-selesai" class="bg-white rounded-2xl shadow-2xl overflow-hidden hidden">
+    <div class="bg-gradient-to-br from-primary-700 to-primary-900 px-6 pt-5 pb-4 text-center">
+      <h2 class="text-white font-bold text-base">Absensi Tercatat</h2>
+    </div>
+
+    <div class="px-6 py-8 flex flex-col items-center">
+      <!-- Animated checkmark -->
+      <svg class="w-24 h-24 mb-4" viewBox="0 0 52 52">
+        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" stroke="#22c55e" stroke-width="2"/>
+        <path class="checkmark-check" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M14 27l8 8 16-16"/>
+      </svg>
+
+      <p id="selesai-title" class="text-2xl font-bold text-gray-800 text-center mb-1"></p>
+      <p id="selesai-time" class="font-mono text-primary-600 font-semibold text-lg mb-4"></p>
+
+      <!-- Summary card -->
+      <div class="w-full bg-primary-50 rounded-xl p-4 mb-4 space-y-2">
+        <div class="flex items-center gap-2 text-sm text-gray-700">
+          <svg class="w-4 h-4 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          </svg>
+          <span id="selesai-lokasi" class="font-medium"></span>
+        </div>
+      </div>
+
+      <!-- Selfie small -->
+      <div id="selesai-selfie-wrap" class="hidden mb-4">
+        <img id="selesai-selfie" src="" alt="Foto selfie" class="w-16 h-16 rounded-full object-cover border-2 border-primary-300 shadow">
+      </div>
+
+      <button onclick="goToHome()"
+        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-xl transition-colors shadow-md mb-2">
+        Kembali ke Beranda
+      </button>
+      <button onclick="doLogout()"
+        class="w-full border border-gray-200 hover:border-gray-300 text-gray-500 hover:text-gray-700 font-semibold py-2.5 rounded-xl transition-colors text-sm">
+        Logout
+      </button>
+    </div>
+  </div>
+
+</div><!-- end main card -->
+
+<!-- ====== TABEL ABSENSI HARI INI ====== -->
+<div id="tabel-wrap" class="max-w-sm mx-auto px-4 pb-4">
+  <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+    <p class="text-primary-200 text-xs font-semibold uppercase tracking-wide mb-3">Absensi Hari Ini</p>
+    <div class="table-wrap">
+      <table class="w-full text-xs">
+        <thead>
+          <tr class="text-primary-300">
+            <th class="text-left pb-2 font-semibold w-8"></th>
+            <th class="text-left pb-2 font-semibold">Nama</th>
+            <th class="text-center pb-2 font-semibold">In</th>
+            <th class="text-center pb-2 font-semibold">Out</th>
+            <th class="text-center pb-2 font-semibold">Status</th>
+          </tr>
+        </thead>
+        <tbody id="tabel-body">
+          <tr>
+            <td colspan="5" class="text-center text-primary-400 py-4 text-xs italic">Belum ada absensi hari ini</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="max-w-sm mx-auto px-4 pb-6 text-center">
+  <p class="text-primary-500 text-xs">© 2025 Kalurahan Bokoharjo | PIN Demo: <span class="font-mono font-semibold text-primary-400">1234</span></p>
+</div>
+
+<!-- ===================== JAVASCRIPT ===================== -->
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+const PERANGKAT = [
+  { id:'P01', nama:'H. Suratman, S.Sos', jabatan:'Lurah', pin:'1234' },
+  { id:'P02', nama:'Drs. Bambang Supriyadi', jabatan:'Sekretaris Lurah', pin:'1234' },
+  { id:'P03', nama:'Sari Dewi, SE', jabatan:'Kaur Keuangan', pin:'1234' },
+  { id:'P04', nama:'Joko Susilo', jabatan:'Kaur Umum', pin:'1234' },
+  { id:'P05', nama:'Budi Prasetyo', jabatan:'Kaur Perencanaan', pin:'1234' },
+  { id:'P06', nama:'Eni Rahayu', jabatan:'Kasi Pemerintahan', pin:'1234' },
+  { id:'P07', nama:'Rudi Setiawan', jabatan:'Kasi Kesejahteraan', pin:'1234' },
+  { id:'P08', nama:'Agus Wirawan', jabatan:'Kasi Pelayanan', pin:'1234' },
+  { id:'P09', nama:'Fitri Handayani', jabatan:'Staf Pelayanan', pin:'1234' },
+  { id:'P10', nama:'Hendra Kusuma', jabatan:'Staf Keuangan', pin:'1234' },
+  { id:'P11', nama:'Lina Marlina', jabatan:'Staf Umum', pin:'1234' },
+  { id:'P12', nama:'Wahyu Santoso', jabatan:'Staf Perencanaan', pin:'1234' },
+  { id:'P13', nama:'Dewi Kurniasih', jabatan:'Operator Komputer', pin:'1234' },
+  { id:'P14', nama:'Sumardi', jabatan:'Penjaga Kantor', pin:'1234' },
+  { id:'P15', nama:'Yuni Astuti', jabatan:'Kebersihan', pin:'1234' },
+];
+
+// Koordinat kantor kalurahan
+const KANTOR_LAT = -7.7659;
+const KANTOR_LON = 110.4880;
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+let currentUser = null;
+let clockType   = null; // 'in' | 'out'
+
+// ─── HELPERS ────────────────────────────────────────────────────────────────
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function nowTime() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+}
+
+function nowTimeShort() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function formatDateId(d) {
+  const days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+  const months = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+  return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+function getInitials(nama) {
+  return nama.split(' ').slice(0,2).map(w => w[0]).join('').toUpperCase();
+}
+
+function getAbsensiToday() {
+  const key = `absensi_${todayKey()}`;
+  return JSON.parse(localStorage.getItem(key) || '{}');
+}
+
+function saveAbsensiToday(data) {
+  const key = `absensi_${todayKey()}`;
+  localStorage.setItem(key, JSON.stringify(data));
+}
+
+function getUserAbsensi(userId) {
+  const data = getAbsensiToday();
+  return data[userId] || {};
+}
+
+function calcDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLon/2)**2;
+  return Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+}
+
+// ─── CLOCK ──────────────────────────────────────────────────────────────────
+function updateClocks() {
+  const now = new Date();
+  const hms = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  const elems = document.querySelectorAll('[id$="-clock"]');
+  elems.forEach(el => { if(el) el.textContent = hms; });
+}
+setInterval(updateClocks, 1000);
+updateClocks();
+
+// ─── DATE ───────────────────────────────────────────────────────────────────
+function setDateLabels() {
+  const txt = formatDateId(new Date());
+  const loginDate = document.getElementById('login-date');
+  const homeDate = document.getElementById('home-date');
+  if(loginDate) loginDate.textContent = txt;
+  if(homeDate) homeDate.textContent = txt;
+}
+setDateLabels();
+
+// ─── POPULATE DROPDOWN ──────────────────────────────────────────────────────
+(function populateDropdown() {
+  const sel = document.getElementById('login-select');
+  PERANGKAT.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${p.nama} — ${p.jabatan}`;
+    sel.appendChild(opt);
+  });
+})();
+
+// ─── PIN INDICATOR ──────────────────────────────────────────────────────────
+document.getElementById('login-pin').addEventListener('input', function() {
+  const len = Math.min(this.value.length, 4);
+  for(let i = 0; i < 4; i++) {
+    document.getElementById(`dot-${i}`).classList.toggle('filled', i < len);
+  }
+  // auto-submit on 4 digits
+  if(this.value.length === 4) {
+    setTimeout(doLogin, 150);
+  }
+});
+
+// Allow Enter key on PIN
+document.getElementById('login-pin').addEventListener('keydown', function(e) {
+  if(e.key === 'Enter') doLogin();
+});
+
+// ─── STATE SWITCHER ─────────────────────────────────────────────────────────
+const ALL_STATES = ['login','home','selfie','lokasi','konfirmasi','selesai'];
+
+function showState(name) {
+  ALL_STATES.forEach(s => {
+    document.getElementById(`state-${s}`).classList.toggle('hidden', s !== name);
+  });
+
+  // Table visibility: hide during selfie/lokasi/konfirmasi
+  const hideTable = ['selfie','lokasi','konfirmasi'].includes(name);
+  document.getElementById('tabel-wrap').classList.toggle('hidden', hideTable);
+
+  if(name !== 'selfie') stopCamera();
+  if(name === 'home') updateHomeState();
+  if(name === 'home' || name === 'login' || name === 'selesai') renderTabel();
+}
+
+// ─── LOGIN ──────────────────────────────────────────────────────────────────
+function doLogin() {
+  const selVal = document.getElementById('login-select').value;
+  const pinVal = document.getElementById('login-pin').value.trim();
+  const errEl  = document.getElementById('login-error');
+
+  const found = PERANGKAT.find(p => p.id === selVal && p.pin === pinVal);
+  if(!found) {
+    errEl.classList.remove('hidden');
+    document.getElementById('login-pin').value = '';
+    for(let i=0;i<4;i++) document.getElementById(`dot-${i}`).classList.remove('filled');
+    return;
+  }
+  errEl.classList.add('hidden');
+  currentUser = found;
+  showState('home');
+}
+
+function doLogout() {
+  currentUser = null;
+  clockType   = null;
+  window._selfieDataUrl = null;
+  window._locationData  = null;
+  document.getElementById('login-select').value = '';
+  document.getElementById('login-pin').value = '';
+  for(let i=0;i<4;i++) document.getElementById(`dot-${i}`).classList.remove('filled');
+  document.getElementById('login-error').classList.add('hidden');
+  showState('login');
+}
+
+// ─── HOME ───────────────────────────────────────────────────────────────────
+function updateHomeState() {
+  if(!currentUser) return;
+  // Avatar
+  const avatarEl = document.getElementById('home-avatar');
+  avatarEl.textContent = getInitials(currentUser.nama);
+  document.getElementById('home-nama').textContent = currentUser.nama;
+  document.getElementById('home-jabatan').textContent = currentUser.jabatan;
+
+  const ua = getUserAbsensi(currentUser.id);
+  const statusPanel = document.getElementById('home-status-panel');
+  const btnAction   = document.getElementById('btn-clockaction');
+
+  if(ua.out) {
+    // Sudah clock-out
+    statusPanel.innerHTML = `
+      <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-blue-700 font-semibold text-sm">Selesai Bertugas</p>
+          <p class="text-blue-500 text-xs">${ua.in.time.slice(0,5)} – ${ua.out.time.slice(0,5)}</p>
+        </div>
+      </div>`;
+    btnAction.textContent = 'Absensi Selesai';
+    btnAction.disabled = true;
+    btnAction.className = 'w-full font-bold py-4 rounded-xl text-base bg-gray-200 text-gray-400 cursor-not-allowed';
+    btnAction.onclick = null;
+  } else if(ua.in) {
+    // Sudah clock-in
+    statusPanel.innerHTML = `
+      <div class="bg-primary-50 border border-primary-200 rounded-xl p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-primary-700 font-semibold text-sm">Sudah Clock In</p>
+          <p class="text-primary-500 text-xs">${ua.in.time.slice(0,5)}</p>
+        </div>
+      </div>`;
+    btnAction.textContent = 'CLOCK OUT';
+    btnAction.disabled = false;
+    btnAction.className = 'w-full font-bold py-4 rounded-xl text-white text-lg shadow-lg transition-all active:scale-95 bg-blue-600 hover:bg-blue-700';
+    btnAction.onclick = startAbsensi;
+  } else {
+    // Belum absen
+    statusPanel.innerHTML = `
+      <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-gray-500 font-semibold text-sm">Belum Clock In</p>
+          <p class="text-gray-400 text-xs">Silakan absen masuk</p>
+        </div>
+      </div>`;
+    btnAction.textContent = 'CLOCK IN';
+    btnAction.disabled = false;
+    btnAction.className = 'w-full font-bold py-4 rounded-xl text-white text-lg shadow-lg transition-all active:scale-95 bg-primary-600 hover:bg-primary-700';
+    btnAction.onclick = startAbsensi;
+  }
+}
+
+function startAbsensi() {
+  if(!currentUser) return;
+  const ua = getUserAbsensi(currentUser.id);
+  clockType = ua.in ? 'out' : 'in';
+  window._selfieDataUrl = null;
+  window._locationData  = null;
+  showState('selfie');
+  startCamera();
+}
+
+function goToHome() {
+  showState('home');
+}
+
+// ─── SELFIE / CAMERA ────────────────────────────────────────────────────────
+async function startCamera() {
+  const video    = document.getElementById('cameraFeed');
+  const fallback = document.getElementById('camera-fallback');
+  const btnRow   = document.getElementById('camera-btn-row');
+  const container = document.getElementById('camera-container');
+
+  video.style.display = 'block';
+  fallback.classList.add('hidden');
+  container.style.display = 'block';
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    video.srcObject = stream;
+    window._cameraStream = stream;
+  } catch(e) {
+    showCameraFallback(e.message || 'Kamera tidak tersedia');
+  }
+}
+
+function showCameraFallback(msg) {
+  const video    = document.getElementById('cameraFeed');
+  const fallback = document.getElementById('camera-fallback');
+  const container = document.getElementById('camera-container');
+  const btnRow   = document.getElementById('camera-btn-row');
+
+  video.style.display = 'none';
+  container.style.display = 'none';
+  fallback.classList.remove('hidden');
+  fallback.style.display = 'flex';
+  btnRow.style.display = 'none';
+  document.getElementById('camera-fallback-msg').textContent = msg || 'Kamera tidak dapat diakses.';
+  window._selfieDataUrl = null;
+}
+
+function capturePhoto() {
+  const video = document.getElementById('cameraFeed');
+  if(!video.srcObject) return;
+  const canvas = document.createElement('canvas');
+  canvas.width  = video.videoWidth  || 640;
+  canvas.height = video.videoHeight || 480;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  window._selfieDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+  stopCamera();
+  goToLokasi();
+}
+
+function skipCamera() {
+  window._selfieDataUrl = null;
+  stopCamera();
+  goToLokasi();
+}
+
+function stopCamera() {
+  if(window._cameraStream) {
+    window._cameraStream.getTracks().forEach(t => t.stop());
+    window._cameraStream = null;
+  }
+}
+
+function cancelSelfie() {
+  stopCamera();
+  showState('home');
+}
+
+function goBackToSelfie() {
+  showState('selfie');
+  startCamera();
+}
+
+// ─── LOKASI ─────────────────────────────────────────────────────────────────
+function goToLokasi() {
+  showState('lokasi');
+  // reset
+  document.getElementById('loc-loading').style.display = 'flex';
+  document.getElementById('loc-result').style.display  = 'none';
+  document.getElementById('loc-error').style.display   = 'none';
+  document.getElementById('btn-confirm-loc').disabled   = true;
+  getLocation();
+}
+
+function showLocationLoading() {
+  document.getElementById('loc-loading').style.display = 'flex';
+  document.getElementById('loc-result').style.display  = 'none';
+  document.getElementById('loc-error').style.display   = 'none';
+}
+
+function showLocationResult() {
+  document.getElementById('loc-loading').style.display = 'none';
+  document.getElementById('loc-result').style.display  = 'flex';
+  document.getElementById('loc-error').style.display   = 'none';
+
+  const d = window._locationData;
+  document.getElementById('loc-short-addr').textContent = d.shortAddr || 'Lokasi terdeteksi';
+  document.getElementById('loc-coords').textContent     = `Lat: ${d.lat.toFixed(5)} | Lon: ${d.lon.toFixed(5)}`;
+  document.getElementById('loc-accuracy').textContent   = d.accuracy ? `Akurasi: ±${Math.round(d.accuracy)}m` : '';
+
+  // Distance badge
+  const dist  = calcDistance(d.lat, d.lon, KANTOR_LAT, KANTOR_LON);
+  const inArea = dist <= 500;
+  const badgeEl = document.getElementById('loc-distance-badge');
+  badgeEl.innerHTML = inArea
+    ? `<span class="bg-primary-100 text-primary-700 text-xs font-semibold px-3 py-1 rounded-full">Dalam Area ✓ (${dist}m dari kantor)</span>`
+    : `<span class="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">Di Luar Area • ${dist}m dari kantor</span>`;
+
+  document.getElementById('btn-confirm-loc').disabled = false;
+}
+
+function showLocationFallback(msg) {
+  document.getElementById('loc-loading').style.display = 'none';
+  document.getElementById('loc-result').style.display  = 'none';
+  document.getElementById('loc-error').style.display   = 'flex';
+  document.getElementById('loc-error-msg').textContent = msg || 'GPS tidak tersedia';
+}
+
+async function getLocation() {
+  showLocationLoading();
+
+  if(!navigator.geolocation) {
+    showLocationFallback('Browser tidak mendukung GPS');
+    document.getElementById('btn-confirm-loc').disabled = true;
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
+      const { latitude, longitude, accuracy } = pos.coords;
+      window._locationData = { lat: latitude, lon: longitude, accuracy };
+
+      try {
+        const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=id`);
+        const data = await res.json();
+        window._locationData.address   = data.display_name || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        const addr = data.address || {};
+        window._locationData.shortAddr = (addr.road || addr.neighbourhood || addr.suburb || 'Lokasi terdeteksi')
+          + ', ' + (addr.city || addr.regency || addr.county || 'Sleman');
+      } catch {
+        window._locationData.address   = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+        window._locationData.shortAddr = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+      }
+
+      showLocationResult();
+    },
+    (err) => {
+      showLocationFallback(err.message);
+    },
+    { enableHighAccuracy: true, timeout: 15000 }
+  );
+}
+
+function skipLokasi() {
+  window._locationData = null;
+  goToKonfirmasi();
+}
+
+// ─── KONFIRMASI ─────────────────────────────────────────────────────────────
+function goToKonfirmasi() {
+  showState('konfirmasi');
+
+  // Selfie
+  const imgEl  = document.getElementById('konfirmasi-selfie');
+  const phEl   = document.getElementById('konfirmasi-selfie-placeholder');
+  if(window._selfieDataUrl) {
+    imgEl.src = window._selfieDataUrl;
+    imgEl.classList.remove('hidden');
+    phEl.classList.add('hidden');
+  } else {
+    imgEl.classList.add('hidden');
+    phEl.classList.remove('hidden');
+  }
+
+  // Info user
+  document.getElementById('konfirmasi-nama').textContent    = currentUser.nama;
+  document.getElementById('konfirmasi-jabatan').textContent = currentUser.jabatan;
+
+  // Type badge
+  const badgeEl = document.getElementById('konfirmasi-type-badge');
+  if(clockType === 'in') {
+    badgeEl.textContent  = 'CLOCK IN';
+    badgeEl.className    = 'px-6 py-1.5 rounded-full font-bold text-sm tracking-wide bg-primary-100 text-primary-700';
+  } else {
+    badgeEl.textContent = 'CLOCK OUT';
+    badgeEl.className   = 'px-6 py-1.5 rounded-full font-bold text-sm tracking-wide bg-blue-100 text-blue-700';
+  }
+
+  // Time (update live)
+  document.getElementById('konfirmasi-time').textContent = nowTime();
+
+  // Lokasi
+  const loc = window._locationData;
+  document.getElementById('konfirmasi-lokasi').textContent = loc ? (loc.shortAddr || 'Lokasi terdeteksi') : 'Lokasi tidak terdeteksi';
+  document.getElementById('konfirmasi-coords').textContent = loc ? `Lat: ${loc.lat.toFixed(5)} | Lon: ${loc.lon.toFixed(5)}` : '';
+}
+
+function simpanAbsensi() {
+  const timeNow = nowTime();
+  const record = {
+    userId   : currentUser.id,
+    nama     : currentUser.nama,
+    jabatan  : currentUser.jabatan,
+    type     : clockType,
+    time     : timeNow,
+    timestamp: Date.now(),
+    lat      : window._locationData?.lat || null,
+    lon      : window._locationData?.lon || null,
+    address  : window._locationData?.shortAddr || 'Lokasi tidak terdeteksi',
+    selfie   : window._selfieDataUrl || null,
+    date     : todayKey()
+  };
+
+  const data = getAbsensiToday();
+  if(!data[currentUser.id]) data[currentUser.id] = {};
+  data[currentUser.id][clockType] = record;
+  saveAbsensiToday(data);
+
+  // Show selesai state
+  showState('selesai');
+
+  // Animate checkmark restart
+  const circle = document.querySelector('.checkmark-circle');
+  const check  = document.querySelector('.checkmark-check');
+  [circle, check].forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+
+  document.getElementById('selesai-title').textContent = clockType === 'in' ? 'Clock In Berhasil!' : 'Clock Out Berhasil!';
+  document.getElementById('selesai-time').textContent  = timeNow;
+  document.getElementById('selesai-lokasi').textContent = record.address;
+
+  // Selfie small
+  const selfieWrap = document.getElementById('selesai-selfie-wrap');
+  const selfieImg  = document.getElementById('selesai-selfie');
+  if(record.selfie) {
+    selfieImg.src = record.selfie;
+    selfieWrap.classList.remove('hidden');
+  } else {
+    selfieWrap.classList.add('hidden');
+  }
+}
+
+// ─── TABEL ABSENSI ──────────────────────────────────────────────────────────
+function renderTabel() {
+  const tbody = document.getElementById('tabel-body');
+  const data  = getAbsensiToday();
+  const entries = Object.values(data);
+
+  if(!entries.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-primary-400 py-4 text-xs italic">Belum ada absensi hari ini</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = entries.map(ua => {
+    const rec   = ua.in || ua.out;
+    const inRec = ua.in;
+    const outRec = ua.out;
+
+    // Avatar
+    let avatarHtml;
+    if(inRec?.selfie) {
+      avatarHtml = `<img src="${inRec.selfie}" class="w-6 h-6 rounded-full object-cover">`;
+    } else if(outRec?.selfie) {
+      avatarHtml = `<img src="${outRec.selfie}" class="w-6 h-6 rounded-full object-cover">`;
+    } else {
+      const initials = getInitials(rec.nama);
+      avatarHtml = `<div class="w-6 h-6 rounded-full bg-primary-600 flex items-center justify-center text-white text-xs font-bold">${initials}</div>`;
+    }
+
+    // Status
+    let statusHtml;
+    if(outRec) {
+      statusHtml = `<span class="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full text-xs font-semibold">Pulang</span>`;
+    } else {
+      statusHtml = `<span class="bg-primary-100 text-primary-600 px-1.5 py-0.5 rounded-full text-xs font-semibold">Hadir</span>`;
+    }
+
+    return `
+      <tr class="border-t border-white/10">
+        <td class="py-2 pr-1">${avatarHtml}</td>
+        <td class="py-2 pr-2">
+          <p class="text-white text-xs font-medium leading-tight truncate max-w-[90px]">${rec.nama.split(',')[0]}</p>
+        </td>
+        <td class="py-2 text-center text-primary-300 font-mono text-xs">${inRec ? inRec.time.slice(0,5) : '—'}</td>
+        <td class="py-2 text-center text-primary-300 font-mono text-xs">${outRec ? outRec.time.slice(0,5) : '—'}</td>
+        <td class="py-2 text-center">${statusHtml}</td>
+      </tr>`;
+  }).join('');
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+showState('login');
+renderTabel();
+</script>
+</body>
+</html>

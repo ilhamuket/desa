@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Berita & Kegiatan — Admin Kalurahan Bokoharjo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+        earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+        accent:'#e8a838', dark:'#1a2e1a'
+      }}}
+    }
+  </script>
+  <style>
+    #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+    @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+    #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+    #sidebarBackdrop.show { display:block; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+    .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+    .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+    .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+    .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+    .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+    .nav-badge.red { background:#ef4444; color:#fff; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="w-10 h-10 rounded-full bg-[#e8a838] items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0 hidden">BK</div>
+      <div class="min-w-0">
+        <p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p>
+        <p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Layanan Surat<span class="nav-badge">5</span></a>
+    <a href="admin-pengaduan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>Pengaduan Warga<span class="nav-badge red">3</span></a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>Berita & Kegiatan</a>
+    <a href="admin-galeri.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Galeri Foto</a>
+    <a href="admin-dokumen.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Dokumen & APBDes</a>
+    <a href="admin-profil.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Profil Kalurahan</a>
+        <a href="admin-umkm.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>
+      UMKM
+    </a>
+    <a href="admin-wisata.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Wisata Desa
+    </a>
+    <a href="admin-pertanian.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Pertanian
+    </a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-warga.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Data Warga</a>
+    <a href="admin-absensi.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Absensi Perangkat</a>
+    <div class="mt-2 pt-2 border-t border-white/10">
+      <a href="index.html" target="_blank" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Portal Kalurahan</a>
+    </div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0"><p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p><p class="text-green-400/50 text-xs">Operator Kalurahan</p></div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Keluar</a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+
+  <!-- TOPBAR -->
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-gray-800 font-bold text-base leading-tight">Berita & Kegiatan</h1>
+      <p class="text-[11px] text-gray-400 leading-none mt-0.5">
+        <a href="admin-dashboard.html" class="hover:text-primary-600">Dashboard</a>
+        <span class="mx-1">›</span>Konten<span class="mx-1">›</span>
+        <span class="text-primary-600 font-medium">Berita & Kegiatan</span>
+      </p>
+    </div>
+    <button onclick="openModal('tambah')" class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      <span class="hidden sm:inline">Tambah Konten</span>
+      <span class="sm:hidden">Tambah</span>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6 space-y-5">
+
+    <!-- TABS -->
+    <div class="flex gap-1 bg-white border border-gray-200 rounded-xl p-1 w-fit">
+      <button id="tab-berita-btn" onclick="switchTab('berita')" class="tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-primary-600 text-white">
+        Berita Desa
+      </button>
+      <button id="tab-kegiatan-btn" onclick="switchTab('kegiatan')" class="tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700">
+        Agenda Kegiatan
+      </button>
+    </div>
+
+    <!-- TAB BERITA -->
+    <div id="tab-berita">
+      <!-- Stats -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Total Berita</p>
+          <p class="text-2xl font-bold text-gray-800 mt-1">24</p>
+          <p class="text-xs text-gray-400 mt-1">Semua artikel</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Diterbitkan</p>
+          <p class="text-2xl font-bold text-primary-600 mt-1">20</p>
+          <p class="text-xs text-gray-400 mt-1">Aktif tayang</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Draft</p>
+          <p class="text-2xl font-bold text-yellow-500 mt-1">4</p>
+          <p class="text-xs text-gray-400 mt-1">Belum tayang</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Dibaca Bulan Ini</p>
+          <p class="text-2xl font-bold text-blue-600 mt-1">1.240</p>
+          <p class="text-xs text-gray-400 mt-1">Total views</p>
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="flex flex-col sm:flex-row gap-3 mb-4">
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="searchBerita" placeholder="Cari berita..." onkeyup="filterBerita()" class="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+        </div>
+        <select id="filterKategori" onchange="filterBerita()" class="bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Semua Kategori</option>
+          <option>Pemerintahan</option>
+          <option>Sosial</option>
+          <option>Pertanian</option>
+          <option>Lingkungan</option>
+          <option>Pendidikan</option>
+          <option>Infrastruktur</option>
+          <option>UMKM</option>
+          <option>Kesehatan</option>
+        </select>
+        <select id="filterStatus" onchange="filterBerita()" class="bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+          <option value="">Semua Status</option>
+          <option value="terbit">Terbit</option>
+          <option value="draft">Draft</option>
+        </select>
+      </div>
+
+      <!-- Table -->
+      <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide w-16">Thumb</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Judul</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Kategori</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Tanggal</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="beritaTableBody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div id="beritaEmpty" class="hidden py-12 text-center text-gray-400">
+          <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+          <p class="font-medium">Tidak ada berita ditemukan</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB KEGIATAN -->
+    <div id="tab-kegiatan" class="hidden">
+      <!-- Stats Kegiatan -->
+      <div class="grid grid-cols-3 gap-4 mb-5">
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Total Agenda</p>
+          <p class="text-2xl font-bold text-gray-800 mt-1">6</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Akan Datang</p>
+          <p class="text-2xl font-bold text-blue-600 mt-1">3</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-100 p-4">
+          <p class="text-xs text-gray-500 font-medium">Selesai</p>
+          <p class="text-2xl font-bold text-gray-400 mt-1">3</p>
+        </div>
+      </div>
+
+      <!-- Table Kegiatan -->
+      <div class="bg-white rounded-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 border-b border-gray-100">
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Judul Kegiatan</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden sm:table-cell">Tanggal</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden md:table-cell">Waktu</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide hidden lg:table-cell">Lokasi</th>
+                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
+                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="kegiatanTableBody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MODAL TAMBAH/EDIT KONTEN -->
+<div id="modalKonten" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal()"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 id="modalTitle" class="text-lg font-bold text-gray-800">Tambah Konten</h2>
+        <button onclick="closeModal()" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <!-- Toggle Jenis -->
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Jenis Konten</p>
+          <div class="flex gap-2">
+            <button id="toggle-berita" onclick="toggleModalJenis('berita')" class="flex-1 py-2 rounded-lg text-sm font-semibold border-2 border-primary-500 bg-primary-50 text-primary-700 transition-all">Berita</button>
+            <button id="toggle-kegiatan" onclick="toggleModalJenis('kegiatan')" class="flex-1 py-2 rounded-lg text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 transition-all">Kegiatan</button>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Judul <span class="text-red-500">*</span></label>
+          <input id="formJudul" type="text" placeholder="Masukkan judul..." class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+        </div>
+
+        <div id="fieldKategori">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Kategori</label>
+          <select id="formKategori" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-700">
+            <option>Pemerintahan</option>
+            <option>Sosial</option>
+            <option>Pertanian</option>
+            <option>Lingkungan</option>
+            <option>Pendidikan</option>
+            <option>Infrastruktur</option>
+            <option>UMKM</option>
+            <option>Kesehatan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal <span class="text-red-500">*</span></label>
+          <input id="formTanggal" type="date" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-700">
+        </div>
+
+        <!-- Extra fields untuk kegiatan -->
+        <div id="fieldWaktuLokasi" class="hidden space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Waktu</label>
+            <input id="formWaktu" type="time" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-gray-700">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Lokasi</label>
+            <input id="formLokasi" type="text" placeholder="Nama tempat kegiatan..." class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Isi / Deskripsi</label>
+          <textarea id="formIsi" rows="4" placeholder="Tulis isi konten di sini..." class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"></textarea>
+        </div>
+
+        <div id="fieldStatus">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Status</label>
+          <div class="flex gap-3">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="formStatus" value="terbit" checked class="accent-primary-600">
+              <span class="text-sm text-gray-700">Terbitkan</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="radio" name="formStatus" value="draft" class="accent-primary-600">
+              <span class="text-sm text-gray-700">Simpan Draft</span>
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
+        <button onclick="closeModal()" class="px-5 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button onclick="simpanKonten()" class="px-5 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 right-6 z-[100] hidden">
+  <div class="bg-gray-800 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-xl flex items-center gap-3">
+    <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMsg">Berhasil disimpan</span>
+  </div>
+</div>
+
+<script>
+  // ========================
+  // DATA
+  // ========================
+  let beritaData = [
+    { id:1, judul:'Musyawarah Dusun RW 05 Membahas Program Ketahanan Pangan', kategori:'Pemerintahan', tgl:'16 Mei 2025', status:'terbit', views:234 },
+    { id:2, judul:'Penyerahan Bantuan BPNT Tahap 2 kepada 120 KPM', kategori:'Sosial', tgl:'15 Mei 2025', status:'terbit', views:189 },
+    { id:3, judul:'Pelatihan Pembuatan Pupuk Organik bagi Kelompok Tani', kategori:'Pertanian', tgl:'14 Mei 2025', status:'terbit', views:156 },
+    { id:4, judul:'Gotong Royong Pembersihan Saluran Irigasi Dusun Karang', kategori:'Lingkungan', tgl:'13 Mei 2025', status:'terbit', views:98 },
+    { id:5, judul:'Pembukaan PAUD Baru di Dusun Senden Wetan', kategori:'Pendidikan', tgl:'12 Mei 2025', status:'terbit', views:312 },
+    { id:6, judul:'Rencana Pembangunan Jembatan Dusun Bokoharjo Barat', kategori:'Infrastruktur', tgl:'10 Mei 2025', status:'draft', views:0 },
+    { id:7, judul:'Profil Kelompok Wanita Tani Melati Dusun Prambanan', kategori:'UMKM', tgl:'8 Mei 2025', status:'terbit', views:145 },
+    { id:8, judul:'Sosialisasi Program Posyandu Lansia 2025', kategori:'Kesehatan', tgl:'5 Mei 2025', status:'draft', views:0 },
+  ];
+
+  let kegiatanData = [
+    { id:1, judul:'Rapat Koordinasi Perangkat Kalurahan', tgl:'20 Mei 2025', waktu:'09:00 WIB', lokasi:'Balai Kalurahan Bokoharjo', status:'akan_datang' },
+    { id:2, judul:'Posyandu Balita RW 01-04', tgl:'22 Mei 2025', waktu:'08:00 WIB', lokasi:'Polindes Dusun Karang', status:'akan_datang' },
+    { id:3, judul:'Senam Pagi Rutin Bersama', tgl:'18 Mei 2025', waktu:'06:00 WIB', lokasi:'Lapangan Voli Bokoharjo', status:'akan_datang' },
+    { id:4, judul:'Kerja Bakti Desa', tgl:'14 Mei 2025', waktu:'07:00 WIB', lokasi:'Seluruh Dusun', status:'selesai' },
+    { id:5, judul:'Pelatihan Komputer untuk Perangkat', tgl:'10 Mei 2025', waktu:'13:00 WIB', lokasi:'Kantor Kalurahan', status:'selesai' },
+    { id:6, judul:'Pemeriksaan Kesehatan Gratis', tgl:'5 Mei 2025', waktu:'08:00 WIB', lokasi:'Balai Dusun Senden', status:'selesai' },
+  ];
+
+  let nextBeritaId = 9;
+  let nextKegiatanId = 7;
+  let editingId = null;
+  let editingJenis = null;
+  let modalJenis = 'berita';
+  let activeTab = 'berita';
+
+  // ========================
+  // CATEGORY COLORS
+  // ========================
+  const kategoriColor = {
+    'Pemerintahan': { bg:'bg-blue-100', text:'text-blue-700', thumb:'#1d4ed8' },
+    'Sosial':       { bg:'bg-purple-100', text:'text-purple-700', thumb:'#7c3aed' },
+    'Pertanian':    { bg:'bg-green-100', text:'text-green-700', thumb:'#15803d' },
+    'Lingkungan':   { bg:'bg-teal-100', text:'text-teal-700', thumb:'#0f766e' },
+    'Pendidikan':   { bg:'bg-yellow-100', text:'text-yellow-700', thumb:'#b45309' },
+    'Infrastruktur':{ bg:'bg-orange-100', text:'text-orange-700', thumb:'#c2410c' },
+    'UMKM':         { bg:'bg-pink-100', text:'text-pink-700', thumb:'#be185d' },
+    'Kesehatan':    { bg:'bg-red-100', text:'text-red-700', thumb:'#dc2626' },
+  };
+
+  // ========================
+  // RENDER BERITA
+  // ========================
+  function renderBerita(data) {
+    const tbody = document.getElementById('beritaTableBody');
+    const empty = document.getElementById('beritaEmpty');
+    if (!data.length) {
+      tbody.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    tbody.innerHTML = data.map(b => {
+      const kc = kategoriColor[b.kategori] || { bg:'bg-gray-100', text:'text-gray-700', thumb:'#6b7280' };
+      const statusBadge = b.status === 'terbit'
+        ? '<span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>Terbit</span>'
+        : '<span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 text-xs font-semibold px-2.5 py-0.5 rounded-full"><span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span>Draft</span>';
+      const toggleBtn = b.status === 'terbit'
+        ? `<button onclick="toggleStatus(${b.id})" class="text-xs px-2.5 py-1 bg-yellow-50 text-yellow-700 hover:bg-yellow-100 rounded-lg font-medium transition-colors">Arsipkan</button>`
+        : `<button onclick="toggleStatus(${b.id})" class="text-xs px-2.5 py-1 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg font-medium transition-colors">Terbitkan</button>`;
+      return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+        <td class="px-4 py-3">
+          <div class="w-12 h-9 rounded-lg flex-shrink-0" style="background:${kc.thumb}"></div>
+        </td>
+        <td class="px-4 py-3">
+          <p class="font-medium text-gray-800 text-sm leading-snug line-clamp-2 max-w-xs">${b.judul}</p>
+          ${b.views > 0 ? `<p class="text-xs text-gray-400 mt-0.5">${b.views.toLocaleString()} views</p>` : ''}
+        </td>
+        <td class="px-4 py-3 hidden md:table-cell">
+          <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${kc.bg} ${kc.text}">${b.kategori}</span>
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">${b.tgl}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-1 justify-end">
+            <button onclick="editBerita(${b.id})" class="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            ${toggleBtn}
+            <button onclick="hapusBerita(${b.id})" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ========================
+  // RENDER KEGIATAN
+  // ========================
+  function renderKegiatan(data) {
+    const tbody = document.getElementById('kegiatanTableBody');
+    tbody.innerHTML = data.map(k => {
+      const statusBadge = k.status === 'akan_datang'
+        ? '<span class="inline-flex items-center gap-1 bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full">Akan Datang</span>'
+        : '<span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-semibold px-2.5 py-0.5 rounded-full">Selesai</span>';
+      return `<tr class="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+        <td class="px-4 py-3">
+          <p class="font-medium text-gray-800 text-sm">${k.judul}</p>
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-500 hidden sm:table-cell whitespace-nowrap">${k.tgl}</td>
+        <td class="px-4 py-3 text-xs text-gray-500 hidden md:table-cell whitespace-nowrap">${k.waktu}</td>
+        <td class="px-4 py-3 text-xs text-gray-500 hidden lg:table-cell">${k.lokasi}</td>
+        <td class="px-4 py-3">${statusBadge}</td>
+        <td class="px-4 py-3">
+          <div class="flex items-center gap-1 justify-end">
+            <button onclick="editKegiatan(${k.id})" class="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button onclick="hapusKegiatan(${k.id})" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors" title="Hapus">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ========================
+  // FILTER BERITA
+  // ========================
+  function filterBerita() {
+    const q = document.getElementById('searchBerita').value.toLowerCase();
+    const kat = document.getElementById('filterKategori').value;
+    const stat = document.getElementById('filterStatus').value;
+    const filtered = beritaData.filter(b => {
+      const matchQ = !q || b.judul.toLowerCase().includes(q);
+      const matchK = !kat || b.kategori === kat;
+      const matchS = !stat || b.status === stat;
+      return matchQ && matchK && matchS;
+    });
+    renderBerita(filtered);
+  }
+
+  // ========================
+  // TABS
+  // ========================
+  function switchTab(tab) {
+    activeTab = tab;
+    document.getElementById('tab-berita').classList.toggle('hidden', tab !== 'berita');
+    document.getElementById('tab-kegiatan').classList.toggle('hidden', tab !== 'kegiatan');
+    const btnB = document.getElementById('tab-berita-btn');
+    const btnK = document.getElementById('tab-kegiatan-btn');
+    if (tab === 'berita') {
+      btnB.className = 'tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-primary-600 text-white';
+      btnK.className = 'tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700';
+    } else {
+      btnK.className = 'tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all bg-primary-600 text-white';
+      btnB.className = 'tab-btn px-5 py-2 rounded-lg text-sm font-semibold transition-all text-gray-500 hover:text-gray-700';
+    }
+  }
+
+  // ========================
+  // MODAL
+  // ========================
+  function openModal(mode, jenis) {
+    editingId = null;
+    editingJenis = null;
+    document.getElementById('modalTitle').textContent = 'Tambah Konten';
+    document.getElementById('formJudul').value = '';
+    document.getElementById('formTanggal').value = '';
+    document.getElementById('formIsi').value = '';
+    document.getElementById('formLokasi').value = '';
+    document.getElementById('formWaktu').value = '';
+    document.querySelector('[name="formStatus"][value="terbit"]').checked = true;
+
+    const defaultJenis = jenis || (activeTab === 'kegiatan' ? 'kegiatan' : 'berita');
+    toggleModalJenis(defaultJenis);
+    document.getElementById('modalKonten').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('modalKonten').classList.add('hidden');
+  }
+
+  function toggleModalJenis(jenis) {
+    modalJenis = jenis;
+    const isKegiatan = jenis === 'kegiatan';
+    document.getElementById('toggle-berita').className = `flex-1 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${!isKegiatan ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`;
+    document.getElementById('toggle-kegiatan').className = `flex-1 py-2 rounded-lg text-sm font-semibold border-2 transition-all ${isKegiatan ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`;
+    document.getElementById('fieldKategori').classList.toggle('hidden', isKegiatan);
+    document.getElementById('fieldWaktuLokasi').classList.toggle('hidden', !isKegiatan);
+  }
+
+  function simpanKonten() {
+    const judul = document.getElementById('formJudul').value.trim();
+    if (!judul) { alert('Judul wajib diisi'); return; }
+    const tgl = document.getElementById('formTanggal').value;
+    const status = document.querySelector('[name="formStatus"]:checked').value;
+
+    if (modalJenis === 'berita') {
+      const kat = document.getElementById('formKategori').value;
+      if (editingId && editingJenis === 'berita') {
+        const idx = beritaData.findIndex(b => b.id === editingId);
+        if (idx !== -1) {
+          beritaData[idx] = { ...beritaData[idx], judul, kategori: kat, tgl: formatTgl(tgl), status };
+        }
+      } else {
+        beritaData.unshift({ id: nextBeritaId++, judul, kategori: kat, tgl: formatTgl(tgl), status, views: 0 });
+      }
+      renderBerita(beritaData);
+    } else {
+      const waktu = document.getElementById('formWaktu').value + ' WIB';
+      const lokasi = document.getElementById('formLokasi').value;
+      if (editingId && editingJenis === 'kegiatan') {
+        const idx = kegiatanData.findIndex(k => k.id === editingId);
+        if (idx !== -1) {
+          kegiatanData[idx] = { ...kegiatanData[idx], judul, tgl: formatTgl(tgl), waktu, lokasi, status: status === 'terbit' ? 'akan_datang' : 'selesai' };
+        }
+      } else {
+        kegiatanData.unshift({ id: nextKegiatanId++, judul, tgl: formatTgl(tgl), waktu, lokasi, status: 'akan_datang' });
+      }
+      renderKegiatan(kegiatanData);
+    }
+
+    closeModal();
+    showToast('Konten berhasil disimpan');
+  }
+
+  function formatTgl(val) {
+    if (!val) return '-';
+    const d = new Date(val);
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+    return `${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  // ========================
+  // AKSI BERITA
+  // ========================
+  function editBerita(id) {
+    const b = beritaData.find(x => x.id === id);
+    if (!b) return;
+    editingId = id;
+    editingJenis = 'berita';
+    document.getElementById('modalTitle').textContent = 'Edit Berita';
+    toggleModalJenis('berita');
+    document.getElementById('formJudul').value = b.judul;
+    document.getElementById('formKategori').value = b.kategori;
+    document.getElementById('formIsi').value = '';
+    document.querySelector(`[name="formStatus"][value="${b.status}"]`).checked = true;
+    document.getElementById('modalKonten').classList.remove('hidden');
+  }
+
+  function toggleStatus(id) {
+    const idx = beritaData.findIndex(b => b.id === id);
+    if (idx === -1) return;
+    beritaData[idx].status = beritaData[idx].status === 'terbit' ? 'draft' : 'terbit';
+    filterBerita();
+    showToast(`Status berita diperbarui`);
+  }
+
+  function hapusBerita(id) {
+    if (!confirm('Hapus berita ini?')) return;
+    beritaData = beritaData.filter(b => b.id !== id);
+    filterBerita();
+    showToast('Berita dihapus');
+  }
+
+  // ========================
+  // AKSI KEGIATAN
+  // ========================
+  function editKegiatan(id) {
+    const k = kegiatanData.find(x => x.id === id);
+    if (!k) return;
+    editingId = id;
+    editingJenis = 'kegiatan';
+    document.getElementById('modalTitle').textContent = 'Edit Kegiatan';
+    toggleModalJenis('kegiatan');
+    document.getElementById('formJudul').value = k.judul;
+    document.getElementById('formLokasi').value = k.lokasi;
+    document.getElementById('modalKonten').classList.remove('hidden');
+  }
+
+  function hapusKegiatan(id) {
+    if (!confirm('Hapus kegiatan ini?')) return;
+    kegiatanData = kegiatanData.filter(k => k.id !== id);
+    renderKegiatan(kegiatanData);
+    showToast('Kegiatan dihapus');
+  }
+
+  // ========================
+  // TOAST
+  // ========================
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+  }
+
+  // ========================
+  // SIDEBAR
+  // ========================
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarBackdrop').classList.add('show'); document.body.style.overflow='hidden'; }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarBackdrop').classList.remove('show'); document.body.style.overflow=''; }
+
+  // ========================
+  // INIT
+  // ========================
+  renderBerita(beritaData);
+  renderKegiatan(kegiatanData);
+</script>
+</body>
+</html>

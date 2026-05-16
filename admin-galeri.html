@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeri Foto — Admin Kalurahan Bokoharjo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        primary:{50:'#f0fdf4',100:'#dcfce7',200:'#bbf7d0',300:'#86efac',400:'#4ade80',500:'#22c55e',600:'#16a34a',700:'#15803d',800:'#166534',900:'#14532d',950:'#052e16'},
+        earth:{50:'#faf8f5',100:'#f3efe8',200:'#e8e0d4',300:'#d4c7b4',400:'#b8a489',500:'#9a8367',600:'#7d6850',700:'#655341',800:'#544639',900:'#493d33'},
+        accent:'#e8a838', dark:'#1a2e1a'
+      }}}
+    }
+  </script>
+  <style>
+    #sidebar { position:fixed; top:0; left:0; width:260px; height:100vh; z-index:40; overflow-y:auto; transition:transform .28s cubic-bezier(.4,0,.2,1); }
+    @media (max-width:1023px) { #sidebar { transform:translateX(-260px); } #sidebar.open { transform:translateX(0); } }
+    #sidebarBackdrop { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:35; }
+    #sidebarBackdrop.show { display:block; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:8px; color:rgba(134,239,172,.55); font-size:13px; font-weight:500; text-decoration:none; transition:all .15s; position:relative; white-space:nowrap; }
+    .nav-item svg { flex-shrink:0; width:16px; height:16px; }
+    .nav-item:hover { background:rgba(255,255,255,.07); color:rgba(255,255,255,.9); }
+    .nav-item.active { background:rgba(34,197,94,.14); color:#4ade80; }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:20%; bottom:20%; width:3px; background:#e8a838; border-radius:0 2px 2px 0; }
+    .nav-label { display:block; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:rgba(134,239,172,.3); padding:10px 10px 3px; }
+    .nav-badge { margin-left:auto; background:#e8a838; color:#052e16; font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; line-height:1.5; flex-shrink:0; }
+    .nav-badge.red { background:#ef4444; color:#fff; }
+
+    /* Photo card hover overlay */
+    .photo-card .overlay { opacity:0; transition:opacity .2s; }
+    .photo-card:hover .overlay { opacity:1; }
+
+    /* Lightbox */
+    #lightbox { transition:opacity .2s; }
+
+    /* Drag & drop area */
+    .drop-zone { transition:all .2s; }
+    .drop-zone.dragover { border-color:#16a34a; background:#f0fdf4; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+
+<div id="sidebarBackdrop" onclick="closeSidebar()"></div>
+<aside id="sidebar" class="bg-[#0d3320] flex flex-col">
+  <div class="flex-shrink-0 px-4 py-4 border-b border-white/10">
+    <div class="flex items-center gap-3">
+      <img src="assets/logo.jpg" alt="Logo" class="w-10 h-10 rounded-full object-cover ring-2 ring-[#e8a838]/40 flex-shrink-0" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="w-10 h-10 rounded-full bg-[#e8a838] items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0 hidden">BK</div>
+      <div class="min-w-0">
+        <p class="text-white font-bold text-sm leading-tight">Kalurahan Bokoharjo</p>
+        <p class="text-[10px] uppercase tracking-wider font-semibold text-green-400/50">Admin Backoffice</p>
+      </div>
+    </div>
+  </div>
+  <nav class="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+    <a href="admin-dashboard.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>Dashboard</a>
+    <span class="nav-label">Pelayanan</span>
+    <a href="admin-pelayanan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Layanan Surat<span class="nav-badge">5</span></a>
+    <a href="admin-pengaduan.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/></svg>Pengaduan Warga<span class="nav-badge red">3</span></a>
+    <span class="nav-label">Konten Website</span>
+    <a href="admin-berita.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>Berita & Kegiatan</a>
+    <a href="admin-galeri.html" class="nav-item active"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>Galeri Foto</a>
+    <a href="admin-dokumen.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Dokumen & APBDes</a>
+    <a href="admin-profil.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>Profil Kalurahan</a>
+        <a href="admin-umkm.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 7H4l1-7z"/></svg>
+      UMKM
+    </a>
+    <a href="admin-wisata.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Wisata Desa
+    </a>
+    <a href="admin-pertanian.html" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+      Pertanian
+    </a>
+    <span class="nav-label">SDM</span>
+    <a href="admin-warga.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>Data Warga</a>
+    <a href="admin-absensi.html" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>Absensi Perangkat</a>
+    <div class="mt-2 pt-2 border-t border-white/10">
+      <a href="index.html" target="_blank" class="nav-item"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>Portal Kalurahan</a>
+    </div>
+  </nav>
+  <div class="flex-shrink-0 border-t border-white/10 px-3 py-3">
+    <div class="flex items-center gap-3 bg-white/5 rounded-xl px-3 py-2.5 mb-2">
+      <div class="w-8 h-8 rounded-full bg-[#e8a838] flex items-center justify-center text-xs font-bold text-[#052e16] flex-shrink-0">AD</div>
+      <div class="flex-1 min-w-0"><p class="text-white text-sm font-semibold truncate leading-tight">Administrator</p><p class="text-green-400/50 text-xs">Operator Kalurahan</p></div>
+      <div class="w-2 h-2 rounded-full bg-green-400 flex-shrink-0"></div>
+    </div>
+    <a href="admin-login.html" class="flex items-center gap-2 px-3 py-2 rounded-lg text-green-300/50 hover:text-white hover:bg-white/8 text-sm transition-all w-full"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>Keluar</a>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="lg:ml-[260px] h-screen overflow-hidden flex flex-col">
+
+  <!-- TOPBAR -->
+  <header class="flex-shrink-0 bg-white border-b border-gray-100 px-4 lg:px-6 h-14 flex items-center gap-3">
+    <button onclick="openSidebar()" class="lg:hidden p-1.5 rounded-lg text-gray-500 hover:bg-gray-100">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </button>
+    <div class="flex-1 min-w-0">
+      <h1 class="text-gray-800 font-bold text-base leading-tight">Galeri Foto</h1>
+      <p class="text-[11px] text-gray-400 leading-none mt-0.5">
+        <a href="admin-dashboard.html" class="hover:text-primary-600">Dashboard</a>
+        <span class="mx-1">›</span>Konten<span class="mx-1">›</span>
+        <span class="text-primary-600 font-medium">Galeri Foto</span>
+      </p>
+    </div>
+    <button onclick="openUploadModal()" class="flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <span class="hidden sm:inline">Upload Foto</span>
+      <span class="sm:hidden">Upload</span>
+    </button>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6 space-y-5">
+
+    <!-- STATS -->
+    <div class="grid grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-gray-100 p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800" id="statTotal">84</p>
+            <p class="text-xs text-gray-500">Total Foto</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800">12</p>
+            <p class="text-xs text-gray-500">Album</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-gray-800">6</p>
+            <p class="text-xs text-gray-500">Foto Baru Bulan Ini</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILTER ALBUM -->
+    <div class="flex flex-wrap gap-2">
+      <button onclick="setFilter('Semua')" data-filter="Semua" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-primary-500 bg-primary-50 text-primary-700 transition-all">Semua</button>
+      <button onclick="setFilter('Kegiatan')" data-filter="Kegiatan" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 bg-white transition-all">Kegiatan</button>
+      <button onclick="setFilter('Pembangunan')" data-filter="Pembangunan" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 bg-white transition-all">Pembangunan</button>
+      <button onclick="setFilter('Budaya')" data-filter="Budaya" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 bg-white transition-all">Budaya</button>
+      <button onclick="setFilter('Pertanian')" data-filter="Pertanian" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 bg-white transition-all">Pertanian</button>
+      <button onclick="setFilter('UMKM')" data-filter="UMKM" class="filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 border-gray-200 text-gray-500 hover:border-gray-300 bg-white transition-all">UMKM</button>
+    </div>
+
+    <!-- PHOTO GRID -->
+    <div id="galeriGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <!-- filled by JS -->
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="galeriEmpty" class="hidden py-16 text-center text-gray-400">
+      <svg class="w-12 h-12 mx-auto mb-4 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <p class="font-semibold text-gray-500">Tidak ada foto di album ini</p>
+      <p class="text-sm mt-1">Coba pilih filter lain atau upload foto baru</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- ============================
+     MODAL UPLOAD FOTO
+============================= -->
+<div id="modalUpload" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeUploadModal()"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800">Upload Foto</h2>
+        <button onclick="closeUploadModal()" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <!-- Drag & Drop Zone -->
+        <div id="dropZone" class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-400 hover:bg-primary-50/40 transition-all"
+          ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)" onclick="document.getElementById('fileInput').click()">
+          <svg class="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          <p class="text-sm font-semibold text-gray-500">Drag & drop foto di sini</p>
+          <p class="text-xs text-gray-400 mt-1">atau klik untuk pilih file</p>
+          <p class="text-xs text-gray-300 mt-2">PNG, JPG, WEBP — Maks. 5 MB</p>
+          <input id="fileInput" type="file" accept="image/*" multiple class="hidden" onchange="handleFileSelect(event)">
+        </div>
+        <div id="filePreview" class="hidden">
+          <div class="flex items-center gap-3 bg-primary-50 border border-primary-200 rounded-lg px-3 py-2.5">
+            <svg class="w-8 h-8 text-primary-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <div class="flex-1 min-w-0">
+              <p id="fileName" class="text-sm font-semibold text-primary-700 truncate">foto.jpg</p>
+              <p id="fileSize" class="text-xs text-primary-500">2.4 MB</p>
+            </div>
+            <button onclick="clearFile()" class="text-primary-400 hover:text-primary-700 transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Judul Foto <span class="text-red-500">*</span></label>
+          <input id="uploadJudul" type="text" placeholder="Nama / keterangan foto..." class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Album</label>
+          <div class="flex gap-2">
+            <select id="uploadAlbum" class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700">
+              <option value="">-- Pilih Album --</option>
+              <option>Kegiatan</option>
+              <option>Pembangunan</option>
+              <option>Budaya</option>
+              <option>Pertanian</option>
+              <option>UMKM</option>
+            </select>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Atau ketik nama album baru:</p>
+          <input id="uploadAlbumBaru" type="text" placeholder="Nama album baru (opsional)" class="w-full mt-1.5 border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal</label>
+          <input id="uploadTanggal" type="date" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700">
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
+        <button onclick="closeUploadModal()" class="px-5 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button onclick="doUpload()" class="flex items-center gap-2 px-5 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Upload
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     MODAL EDIT FOTO
+============================= -->
+<div id="modalEdit" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeEditModal()"></div>
+  <div class="relative z-10 flex items-center justify-center min-h-screen p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800">Edit Info Foto</h2>
+        <button onclick="closeEditModal()" class="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Judul Foto</label>
+          <input id="editJudul" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Album</label>
+          <select id="editAlbum" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700">
+            <option>Kegiatan</option>
+            <option>Pembangunan</option>
+            <option>Budaya</option>
+            <option>Pertanian</option>
+            <option>UMKM</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tanggal</label>
+          <input id="editTanggal" type="date" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-700">
+        </div>
+      </div>
+      <div class="px-6 py-4 border-t border-gray-100 flex gap-3 justify-end">
+        <button onclick="closeEditModal()" class="px-5 py-2 rounded-lg border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">Batal</button>
+        <button onclick="saveEdit()" class="px-5 py-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors">Simpan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================
+     LIGHTBOX
+============================= -->
+<div id="lightbox" class="fixed inset-0 z-[60] hidden bg-black/90 flex flex-col">
+  <!-- Close button -->
+  <div class="flex-shrink-0 flex items-center justify-between px-4 py-3">
+    <div>
+      <p id="lbJudul" class="text-white font-bold text-base leading-tight"></p>
+      <div class="flex items-center gap-2 mt-1">
+        <span id="lbAlbum" class="text-xs text-white/60 font-medium"></span>
+        <span class="text-white/30 text-xs">·</span>
+        <span id="lbTgl" class="text-xs text-white/60"></span>
+        <span class="text-white/30 text-xs">·</span>
+        <span id="lbUkuran" class="text-xs text-white/60"></span>
+      </div>
+    </div>
+    <button onclick="closeLightbox()" class="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition-colors ml-4 flex-shrink-0">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Photo area -->
+  <div class="flex-1 flex items-center justify-center relative min-h-0 px-16">
+    <!-- Prev -->
+    <button onclick="lbPrev()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-all">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </button>
+
+    <!-- Photo placeholder -->
+    <div id="lbPhoto" class="w-full max-w-2xl rounded-2xl flex items-center justify-center" style="height:380px;">
+      <svg class="w-20 h-20 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+
+    <!-- Next -->
+    <button onclick="lbNext()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/80 hover:text-white transition-all">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+
+  <!-- Dot indicators -->
+  <div class="flex-shrink-0 flex justify-center gap-1.5 py-4" id="lbDots"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 right-6 z-[100] hidden">
+  <div class="bg-gray-800 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-xl flex items-center gap-3">
+    <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastMsg">Berhasil</span>
+  </div>
+</div>
+
+<script>
+  // ========================
+  // DATA
+  // ========================
+  let galeriData = [
+    { id:1,  judul:'Musyawarah Desa 2025',            album:'Kegiatan',     tgl:'15 Mei 2025', ukuran:'2.4 MB', warna:'#166534' },
+    { id:2,  judul:'Pembangunan Jalan Dusun Karang',  album:'Pembangunan',  tgl:'12 Mei 2025', ukuran:'3.1 MB', warna:'#1e40af' },
+    { id:3,  judul:'Tari Tradisional HUT Kalurahan',  album:'Budaya',       tgl:'10 Mei 2025', ukuran:'1.8 MB', warna:'#7c3aed' },
+    { id:4,  judul:'Panen Raya Kelompok Tani',        album:'Pertanian',    tgl:'8 Mei 2025',  ukuran:'2.2 MB', warna:'#15803d' },
+    { id:5,  judul:'Produk UMKM Batik Bokoharjo',     album:'UMKM',         tgl:'6 Mei 2025',  ukuran:'1.5 MB', warna:'#b45309' },
+    { id:6,  judul:'Gotong Royong Saluran Irigasi',   album:'Kegiatan',     tgl:'5 Mei 2025',  ukuran:'2.8 MB', warna:'#0f766e' },
+    { id:7,  judul:'Pelatihan Pupuk Organik',         album:'Pertanian',    tgl:'3 Mei 2025',  ukuran:'1.9 MB', warna:'#4d7c0f' },
+    { id:8,  judul:'Penyerahan Bantuan Sosial',       album:'Kegiatan',     tgl:'1 Mei 2025',  ukuran:'2.1 MB', warna:'#be185d' },
+    { id:9,  judul:'Renovasi Balai Dusun Senden',     album:'Pembangunan',  tgl:'28 Apr 2025', ukuran:'3.4 MB', warna:'#1d4ed8' },
+    { id:10, judul:'Pertunjukan Ketoprak Desa',       album:'Budaya',       tgl:'25 Apr 2025', ukuran:'2.6 MB', warna:'#9333ea' },
+    { id:11, judul:'Pembibitan Sayuran Organik',      album:'Pertanian',    tgl:'22 Apr 2025', ukuran:'1.7 MB', warna:'#16a34a' },
+    { id:12, judul:'Stand UMKM Pameran Kecamatan',   album:'UMKM',         tgl:'20 Apr 2025', ukuran:'2.3 MB', warna:'#c2410c' },
+  ];
+
+  let nextId = 13;
+  let activeFilter = 'Semua';
+  let editingId = null;
+
+  // Lightbox state
+  let lbIndex = 0;
+  let lbData = [];
+
+  // ========================
+  // ALBUM BADGE COLORS
+  // ========================
+  const albumColor = {
+    'Kegiatan':    'bg-green-100 text-green-700',
+    'Pembangunan': 'bg-blue-100 text-blue-700',
+    'Budaya':      'bg-purple-100 text-purple-700',
+    'Pertanian':   'bg-lime-100 text-lime-700',
+    'UMKM':        'bg-orange-100 text-orange-700',
+  };
+
+  // ========================
+  // RENDER GRID
+  // ========================
+  function renderGrid(data) {
+    const grid = document.getElementById('galeriGrid');
+    const empty = document.getElementById('galeriEmpty');
+    if (!data.length) {
+      grid.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+    grid.innerHTML = data.map((f, idx) => {
+      const ac = albumColor[f.album] || 'bg-gray-100 text-gray-600';
+      return `<div class="photo-card bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all group cursor-pointer">
+        <!-- Thumbnail -->
+        <div class="relative" style="height:160px;background:${f.warna}" onclick="openLightbox(${f.id})">
+          <div class="absolute inset-0 flex items-center justify-center">
+            <svg class="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          </div>
+          <!-- Hover Overlay -->
+          <div class="overlay absolute inset-0 bg-black/60 flex items-center justify-center gap-3">
+            <button onclick="event.stopPropagation();openLightbox(${f.id})" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Lihat">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+            <button onclick="event.stopPropagation();openEditModal(${f.id})" class="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition-colors" title="Edit">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <button onclick="event.stopPropagation();hapusFoto(${f.id})" class="w-9 h-9 rounded-full bg-white/20 hover:bg-red-500/70 flex items-center justify-center text-white transition-colors" title="Hapus">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- Card info -->
+        <div class="px-3 py-2.5">
+          <p class="text-sm font-semibold text-gray-800 truncate leading-tight">${f.judul}</p>
+          <div class="flex items-center justify-between mt-1.5 gap-2">
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full ${ac} flex-shrink-0">${f.album}</span>
+            <span class="text-[11px] text-gray-400 truncate">${f.tgl}</span>
+          </div>
+          <p class="text-[11px] text-gray-300 mt-0.5">${f.ukuran}</p>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ========================
+  // FILTER
+  // ========================
+  function setFilter(album) {
+    activeFilter = album;
+    // Update pill styles
+    document.querySelectorAll('.filter-pill').forEach(btn => {
+      const isActive = btn.dataset.filter === album;
+      btn.className = `filter-pill px-4 py-1.5 rounded-full text-sm font-semibold border-2 transition-all ${isActive ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 text-gray-500 hover:border-gray-300 bg-white'}`;
+    });
+    const filtered = album === 'Semua' ? galeriData : galeriData.filter(f => f.album === album);
+    renderGrid(filtered);
+  }
+
+  // ========================
+  // LIGHTBOX
+  // ========================
+  function openLightbox(id) {
+    // Build lbData from current filter
+    lbData = activeFilter === 'Semua' ? [...galeriData] : galeriData.filter(f => f.album === activeFilter);
+    lbIndex = lbData.findIndex(f => f.id === id);
+    if (lbIndex === -1) lbIndex = 0;
+    document.getElementById('lightbox').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    renderLightbox();
+  }
+
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function lbPrev() {
+    lbIndex = (lbIndex - 1 + lbData.length) % lbData.length;
+    renderLightbox();
+  }
+
+  function lbNext() {
+    lbIndex = (lbIndex + 1) % lbData.length;
+    renderLightbox();
+  }
+
+  function renderLightbox() {
+    const f = lbData[lbIndex];
+    if (!f) return;
+    document.getElementById('lbJudul').textContent = f.judul;
+    document.getElementById('lbAlbum').textContent = f.album;
+    document.getElementById('lbTgl').textContent = f.tgl;
+    document.getElementById('lbUkuran').textContent = f.ukuran;
+    const photo = document.getElementById('lbPhoto');
+    photo.style.background = f.warna;
+    photo.innerHTML = `<svg class="w-20 h-20 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>`;
+
+    // Dots
+    const dots = document.getElementById('lbDots');
+    dots.innerHTML = lbData.map((_, i) =>
+      `<button onclick="lbGoTo(${i})" class="w-2 h-2 rounded-full transition-all ${i === lbIndex ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/60'}"></button>`
+    ).join('');
+  }
+
+  function lbGoTo(i) {
+    lbIndex = i;
+    renderLightbox();
+  }
+
+  // ========================
+  // UPLOAD MODAL
+  // ========================
+  function openUploadModal() {
+    document.getElementById('modalUpload').classList.remove('hidden');
+    document.getElementById('uploadJudul').value = '';
+    document.getElementById('uploadAlbum').value = '';
+    document.getElementById('uploadAlbumBaru').value = '';
+    document.getElementById('uploadTanggal').value = '';
+    clearFile();
+  }
+
+  function closeUploadModal() {
+    document.getElementById('modalUpload').classList.add('hidden');
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.add('dragover');
+  }
+
+  function handleDragLeave(e) {
+    document.getElementById('dropZone').classList.remove('dragover');
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) showFilePreview(files[0]);
+  }
+
+  function handleFileSelect(e) {
+    if (e.target.files.length) showFilePreview(e.target.files[0]);
+  }
+
+  function showFilePreview(file) {
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileSize').textContent = (file.size / 1024 / 1024).toFixed(1) + ' MB';
+    document.getElementById('dropZone').classList.add('hidden');
+    document.getElementById('filePreview').classList.remove('hidden');
+    if (!document.getElementById('uploadJudul').value) {
+      document.getElementById('uploadJudul').value = file.name.replace(/\.[^.]+$/, '');
+    }
+  }
+
+  function clearFile() {
+    document.getElementById('fileInput').value = '';
+    document.getElementById('dropZone').classList.remove('hidden');
+    document.getElementById('filePreview').classList.add('hidden');
+  }
+
+  // Warna-warna acak untuk foto baru
+  const randomColors = ['#166534','#1e40af','#7c3aed','#15803d','#b45309','#0f766e','#4d7c0f','#be185d','#1d4ed8','#9333ea','#c2410c','#0369a1'];
+  let colorIdx = 0;
+
+  function doUpload() {
+    const judul = document.getElementById('uploadJudul').value.trim();
+    if (!judul) { alert('Judul wajib diisi'); return; }
+    const albumSelect = document.getElementById('uploadAlbum').value;
+    const albumBaru = document.getElementById('uploadAlbumBaru').value.trim();
+    const album = albumBaru || albumSelect || 'Kegiatan';
+    const tglRaw = document.getElementById('uploadTanggal').value;
+
+    const bulan = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+    let tglStr = '16 Mei 2025';
+    if (tglRaw) {
+      const d = new Date(tglRaw);
+      tglStr = `${d.getDate()} ${bulan[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    const warna = randomColors[colorIdx % randomColors.length];
+    colorIdx++;
+
+    galeriData.unshift({ id: nextId++, judul, album, tgl: tglStr, ukuran: '—', warna });
+    closeUploadModal();
+    setFilter(activeFilter);
+    showToast('Foto berhasil diupload');
+  }
+
+  // ========================
+  // EDIT MODAL
+  // ========================
+  function openEditModal(id) {
+    editingId = id;
+    const f = galeriData.find(x => x.id === id);
+    if (!f) return;
+    document.getElementById('editJudul').value = f.judul;
+    document.getElementById('editAlbum').value = f.album;
+    document.getElementById('modalEdit').classList.remove('hidden');
+  }
+
+  function closeEditModal() {
+    document.getElementById('modalEdit').classList.add('hidden');
+    editingId = null;
+  }
+
+  function saveEdit() {
+    if (!editingId) return;
+    const idx = galeriData.findIndex(f => f.id === editingId);
+    if (idx === -1) return;
+    galeriData[idx].judul = document.getElementById('editJudul').value.trim() || galeriData[idx].judul;
+    galeriData[idx].album = document.getElementById('editAlbum').value;
+    closeEditModal();
+    setFilter(activeFilter);
+    showToast('Info foto diperbarui');
+  }
+
+  // ========================
+  // HAPUS
+  // ========================
+  function hapusFoto(id) {
+    if (!confirm('Hapus foto ini?')) return;
+    galeriData = galeriData.filter(f => f.id !== id);
+    setFilter(activeFilter);
+    showToast('Foto dihapus');
+  }
+
+  // ========================
+  // TOAST
+  // ========================
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.classList.remove('hidden');
+    setTimeout(() => t.classList.add('hidden'), 3000);
+  }
+
+  // ========================
+  // SIDEBAR
+  // ========================
+  function openSidebar() { document.getElementById('sidebar').classList.add('open'); document.getElementById('sidebarBackdrop').classList.add('show'); document.body.style.overflow='hidden'; }
+  function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sidebarBackdrop').classList.remove('show'); document.body.style.overflow=''; }
+
+  // Keyboard nav for lightbox
+  document.addEventListener('keydown', e => {
+    if (!document.getElementById('lightbox').classList.contains('hidden')) {
+      if (e.key === 'ArrowLeft') lbPrev();
+      if (e.key === 'ArrowRight') lbNext();
+      if (e.key === 'Escape') closeLightbox();
+    }
+  });
+
+  // ========================
+  // INIT
+  // ========================
+  renderGrid(galeriData);
+</script>
+</body>
+</html>
